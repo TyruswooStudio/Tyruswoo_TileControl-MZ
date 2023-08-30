@@ -394,6 +394,9 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *             $gameMap.autotileAhead(autotileList, distance, z)
  *        - Fixed bug where tile changes were lost if the player opened the
  *          field menu mid-event.
+ * 
+ * v3.0.1  8/30/2023
+ *        - This plugin is now free and open source under the MIT license.
  *
  * ============================================================================
  * MIT License
