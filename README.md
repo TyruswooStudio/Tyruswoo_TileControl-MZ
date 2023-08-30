@@ -181,9 +181,9 @@ so finding their x,y coordinates is straightforward.
 
 ### Tn
 
-  Where T is the tab, and n is the number of the tile when
-  counting tiles from left to right, starting with zero. Also
-  known as "Letter Number" or "Tab Number".
+Where T is the tab, and n is the number of the tile when
+counting tiles from left to right, starting with zero. Also
+known as "Letter Number" or "Tab Number".
 - Tip: This numbering scheme is the same as how regions are
   numbered and displayed in the regions (R) tab, so you can
   use the regions tab to help with counting tiles.
