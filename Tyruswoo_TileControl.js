@@ -36,11 +36,16 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc MZ v3.0 Change tiles dynamically during gameplay!
+ * @plugindesc v2.0.1 Change tiles dynamically during gameplay!
  * @author Tyruswoo and McKathlin
  * @url https://www.tyruswoo.com
  *
  * @help Tyruswoo Tile Control for RPG Maker MZ
+ *  
+ * WARNING: This is an older plugin! It lacks features and improvements
+ * present in the latest version. You can get the latest version for free
+ * on Tyruswoo.com.
+ * 
  * ============================================================================
  * Plugin commands, their arguments, and short explanations:
  *
@@ -123,43 +128,26 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * ============================================================================
  * Script calls (Advanced):
  *
- * $gameMap.tileCodeAt(x,y,z)
- *     Returns the "Tx,y" ("Letter X comma Y" or "Tab X comma Y") tile code
- *     at location (x,y,z) where x is the x coordinate,y is the y coordinate,
- *     and z is the z layer (0, 1, 2, or 3). Tile code returns as a string.
- *     - For example, from the default Overworld tileset, ocean returns the
- *       string "A0,0".
- *     - This script call is useful in a conditional branch.
- *       For example, if the player is in the  Overworld and the Overworld is
- *       using the default tilset, you can use a conditional branch with the
- *       following script to check whether the player is currently in a
- *       temperate/deciduous forest tile (at z=1, which is editor layer 2):
- *       > Conditional Branch (Script):
- *         $gameMap.tileCodeAt($gamePlayer.x, $gamePlayer.y, 1) == "A4,2"
+ * $gameMap.tileCodeAt(x,y,z)   Returns the "Tx,y" ("Letter X comma Y" or "Tab
+ *                              X comma Y") tile code at location (x,y,z) where
+ *                              x is the x coordinate, y is the y coordinate,
+ *                              and z is the z layer (0, 1, 2, or 3). Tile code
+ *                              returns as a string.
+ *                               - For example, from the default Overworld
+ *                                 tileset, ocean returns the string "A0,0".
+ *                               - This script call is useful in a conditional
+ *                                 branch. For example, if the player is in the
+ *                                 Overworld and the Overworld is using the
+ *                                 default tilset, you can use a conditional
+ *                                 branch with the following script to check
+ *                                 whether the player is currently in a
+ *                                 temperate/deciduous forest tile (at z=1,
+ *                                 which is editor layer 2):
+ *                                  > Conditional Branch (Script):
+ *                                    $gameMap.tileCodeAt($gamePlayer.x,
+ *                                       $gamePlayer.y, 1) == "A4,2"
  *
- * $gameMap.tileCode(x,y,z)
- *     Same as $gameMap.tileCodeAt(x,y,z).
- *
- * $gameMap.tileMatch(tileIdList, x, y, z)
- * $gameMap.tileIdInList(tileIdList, x, y, z)
- * $gameMap.autotileInList(autotileList, x, y, z)
- * $gameMap.tileIdInListAhead(tileIdList, distance, z)
- * $gameMap.tileAhead(tileIdList, distance, z)
- * $gameMap.autotileInListAhead(autotileList, distance, z)
- * $gameMap.autotileAhead(autotileList, distance, z)
- *     These script calls return true if the tile at the location matches one
- *     in the list; false otherwise. They're useful for conditional branches.
- *     - tileIdList and autotileList are arrays that can
- *       contain numbers or tile codes (as strings).
- *     - tileAhead and autotileAhead looks in the direction the player is facing,
- *       and finds whichever tile is located there at the z level indicated.
- *     - $gameMap.tileIdInListAhead() is the same as $gameMap.tileAhead().
- *     - Likwise, $gameMap.autotileInListAhead() is the same as
- *       $gameMap.autotileAhead().
- *     Example use case: When the player is pushing an event, you can look
- *     at the tile(s) 2 steps ahead of the player's current location, to
- *     determine what happens when the player tries to push the event.
- *
+ * $gameMap.tileCode(x,y,z)     Same as $gameMap.tileCodeAt(x,y,z).
  * ============================================================================
  * Basics of how to use this plugin:
  * 1. To change a tile while a player is playing your game, you can create an
@@ -382,22 +370,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *          tile sheet. Now a warning is logged instead.
  *        - Fixed bug that kept the map from loading properly in some projects.
  *          Thanks to Cris Litvin for reporting it and helping us debug!
- *
- * v3.0  3/10/2023
- *        - Link Map allows events to change distant maps' tiles.
- *        - Added the following tile-checking script calls:
- *             $gameMap.tileIdInList(tileIdList, x, y, z)
- *             $gameMap.tileIdInListAhead(tileIdList, distance, z)
- *             $gameMap.tileAhead(tileIdList, distance, z)
- *             $gameMap.autotileInList(autotileList, x, y, z)
- *             $gameMap.autotileInListAhead(autotileList, distance, z)
- *             $gameMap.autotileAhead(autotileList, distance, z)
- *        - Fixed bug where tile changes were lost if the player opened the
- *          field menu mid-event.
  * 
- * v3.0.1  8/30/2023
+ * v2.0.1  9/1/2023
  *        - This plugin is now free and open source under the MIT license.
- *
+ * 
  * ============================================================================
  * MIT License
  *
@@ -498,20 +474,6 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * @default 30
  * @text Tile Animation Frames
  * @desc Higher for slower tile animation. Lower for faster tile animation. Zero makes animated tiles vanish. Default: 30.
- * 
- * @command link_map
- * @text Link Map
- * @desc Pick a map, and subsequent Tile Control commands will change tiles on that map instead of the current one.
- * 
- * @arg map
- * @text Map
- * @type text
- * @desc Name or ID of the map to link.
- * 
- * @command unlink_map
- * @text Unlink Map
- * @desc Return to having Tile Control commands affect the map the player is in.
- * 
  */
  
 /*~struct~coordinates:
@@ -828,7 +790,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	const defaultCoordinates = {"x":"0", "y":"0", "z":"0"};
 	const defaultRelativity = {"mode":"Relative to Event","eventId":"","party_member":"","orientational_shift":"","allowAutotiling":"true","clearUpperLayers":"true"};
 	const defaultOrientationalShift = {"forward_shift":"0","rightward_shift":"0"};
-	const defaultFilters = {"region_filter":"","tileId_filter":"","area_filter":"","distance":"","hollow":"","origin":"","creep":""};
+	const defaultFilters = {"region_filter":"","tileId_filter":"","area_filter":"","distance":"","hollow":"","origin":"","creep":""}
 	const defaultRegionFilter = null;
 	const defaultTileIdFilter = null;
 	const defaultTileIdsFilter = null;
@@ -840,7 +802,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	const defaultCreepRegionFilter = null;
 	const defaultCreepTildIdFilter = null;
 	const defaultCreepTileIdsFilter = null;
-	const defaultCreepTileIdZFilter = {"z0":"Recognize","z1":"Recognize","z2":"Recognize","z3":"Recognize"};
+	const defaultCreepTileIdZFilter = {"z0":"Recognize","z1":"Recognize","z2":"Recognize","z3":"Recognize"};;
 	const defaultCreepAreaFilter = null;
 
 	const TILE_SELECTOR_ROW_SIZE = 8;
@@ -853,24 +815,6 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	//=============================================================================
 	// Tile Control Functions
 	//=============================================================================
-
-	Tyruswoo.TileControl.loadReferenceMapSync = function(mapId) {
-		if ($gameMap && mapId == $gameMap.mapId() && $dataMap) {
-			// It's the currently loaded map. No need to open it again.
-			return $dataMap;
-		} else if (Tyruswoo.mapCache && Tyruswoo.mapCache[mapId]) {
-			// It's a cached map. Retrieve it.
-			return Tyruswoo.mapCache[mapId];
-		}
-		// If we're still here, we need to load a not-yet-cached map.
-		const fs = require('fs');
-		const path = "data/Map%1.json".format(mapId.padZero(3));
-		const json = fs.readFileSync(path, 'utf8');
-		const mapObj = JSON.parse(json);
-		Tyruswoo.mapCache = Tyruswoo.mapCache || [];
-		Tyruswoo.mapCache[mapId] = mapObj;
-		return mapObj;
-	};
 
 	Tyruswoo.TileControl.tileIdExists = function(tilesetId, tileId) {
 		const tileSheetName = this.getTileSheetNameOfTileId(tileId);
@@ -931,79 +875,71 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		var tileCode = "";
 		var codeX = 0;
 		var codeY = 0;
-		if (tileId >= Tilemap.TILE_ID_A1) {
+		if(tileId >= Tilemap.TILE_ID_A1) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_A1) / (48 * 8));
 			codeX = Math.floor((tileId - Tilemap.TILE_ID_A1 - codeY * 48 * 8) / 48);
 			tileCode = "A" + codeX + "," + codeY;
-		} else if (tileId >= Tilemap.TILE_ID_A5) {
+		} else if(tileId >= Tilemap.TILE_ID_A5) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_A5) / 8) + 16;
 			codeX = tileId - Tilemap.TILE_ID_A5 - (codeY - 16) * 8;
 			tileCode = "A" + codeX + "," + codeY;
-		} else if (tileId >= Tilemap.TILE_ID_E) {
+		} else if(tileId >= Tilemap.TILE_ID_E) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_E) / 8);
 			codeX = tileId - Tilemap.TILE_ID_E - codeY * 8;
 			tileCode = "E" + codeX + "," + codeY;
-		} else if (tileId >= Tilemap.TILE_ID_D) {
+		} else if(tileId >= Tilemap.TILE_ID_D) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_D) / 8);
 			codeX = tileId - Tilemap.TILE_ID_D - codeY * 8;
 			tileCode = "D" + codeX + "," + codeY;
-		} else if (tileId >= Tilemap.TILE_ID_C) {
+		} else if(tileId >= Tilemap.TILE_ID_C) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_C) / 8);
 			codeX = tileId - Tilemap.TILE_ID_C - codeY * 8;
 			tileCode = "C" + codeX + "," + codeY;
-		} else if (tileId >= Tilemap.TILE_ID_B) {
+		} else if(tileId >= Tilemap.TILE_ID_B) {
 			codeY = Math.floor((tileId - Tilemap.TILE_ID_B) / 8);
 			codeX = tileId - Tilemap.TILE_ID_B - codeY * 8;
 			tileCode = "B" + codeX + "," + codeY;
-		}
+		};
 		return tileCode;
 	};
 	
 	// With input of args from Tile Control plugin command, outputs an array [x, y, z], with accounting for relativity options.
-	Tyruswoo.TileControl.extract_xyz_array = function(args, linkedMap=null) {
+	Tyruswoo.TileControl.extract_xyz_array = function(args) {
 		const coordinates = args.coordinates ? JSON.parse(args.coordinates) : defaultCoordinates;
 		const relativity = args.relativity ? JSON.parse(args.relativity) : defaultRelativity;
 		const orientational_shift = relativity.orientational_shift ? JSON.parse(relativity.orientational_shift) : defaultOrientationalShift;
 		var x = Number(coordinates.x);
 		var y = Number(coordinates.y);
 		const z = Number(coordinates.z);
-		if (relativity.mode == "Relative to Event") {
+		if(relativity.mode == "Relative to Event") {
 			const eventId = Number(relativity.eventId) ? Number(relativity.eventId) : Tyruswoo.TileControl._pluginCommandEventId;
-			let event;
-			let direction;
-			if (linkedMap) {
-				event = linkedMap.events[eventId];
-				direction = event.direction;
-			} else {
-				event = $gameMap.event(eventId);
-				direction = event.direction();
-			}
-			if (event) {
+			const e = $gameMap.event(eventId);
+			if(e) {
 				const f = Number(orientational_shift.forward_shift) ? Number(orientational_shift.forward_shift) : 0;
 				const r = Number(orientational_shift.rightward_shift) ? Number(orientational_shift.rightward_shift) : 0;
-				const xy_shift = Tyruswoo.TileControl.orientationalShift(direction, f, r);
-				x = x + event.x + xy_shift[0];
-				y = y + event.y + xy_shift[1];
-			}
-		} else if (relativity.mode == "Relative to Player") {
+				const xy_shift = Tyruswoo.TileControl.orientationalShift(e.direction(), f, r);
+				x = x + e.x + xy_shift[0];
+				y = y + e.y + xy_shift[1];
+			};
+		} else if(relativity.mode == "Relative to Player") {
 			var p = $gamePlayer; //By default, the party leader is selected.
-			if (Imported.Tyruswoo_FollowerControl) { //However, if Tyruswoo_FollowerControl is installed, then the currently selected follower is automatically selected.
+			if(Imported.Tyruswoo_FollowerControl) { //However, if Tyruswoo_FollowerControl is installed, then the currently selected follower is automatically selected.
 				p = Tyruswoo.FollowerControl.follower();
-			}
-			if (relativity.party_member == "Leader") {
+			};
+			if(relativity.party_member == "Leader") {
 				p = $gamePlayer; //Regardless of whether Tyruswoo_FollowerControl is installed, the "Leader" option can be used to select the leader.
-			} else if (relativity.party_member.substr(0, 8) == "Follower") {
+			} else if(relativity.party_member.substr(0, 8) == "Follower") {
 				const n = Number(relativity.party_member.substr(9)); //Get the number at the end of this string.
 				p = $gamePlayer.followers().follower(n - 1);
-			}
-			if (p) {
+			};
+			if(p) {
 				const f = Number(orientational_shift.forward_shift) ? Number(orientational_shift.forward_shift) : 0;
 				const r = Number(orientational_shift.rightward_shift) ? Number(orientational_shift.rightward_shift) : 0;
 				const xy_shift = Tyruswoo.TileControl.orientationalShift(p.direction(), f, r);
 				x = x + p.x + xy_shift[0];
 				y = y + p.y + xy_shift[1];
-			}
-		}
+			};
+		};
 		return [x, y, z];
 	};
 	
@@ -1027,23 +963,8 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 				xShift += r;
 				yShift -= f;
 				break;
-		}
+		};
 		return [xShift, yShift];
-	};
-
-	Tyruswoo.TileControl.getEditingMap = function() {
-		editingMapId = $gameMap ? $gameMap.editingMapId() : 0;
-		if (0 == editingMapId) {
-			console.log("Editing map is not available.");
-			return null;
-		}
-
-		if ($gameMap && editingMapId == $gameMap.mapId()) {
-			return $dataMap; // It's the current map.
-		} else {
-			// It's a remote map.
-			return this.loadReferenceMapSync(editingMapId);
-		}
 	};
 
 	//=============================================================================
@@ -1110,16 +1031,14 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	
 	// set_tile
 	PluginManager.registerCommand(pluginName, "set_tile", args => {
-		const linkedMap = $gameMap ? $gameMap.linkedMap() : null;
-		const xyz = Tyruswoo.TileControl.extract_xyz_array(args, linkedMap);
+		const xyz = Tyruswoo.TileControl.extract_xyz_array(args);
 		const relativity = args.relativity ? JSON.parse(args.relativity) : defaultRelativity;
 		$gameMap.setTileId(xyz[0], xyz[1], xyz[2], args.tileId, relativity.clearUpperLayers, relativity.allowAutotiling);
 	});
 	
 	// fill_tiles
 	PluginManager.registerCommand(pluginName, "fill_tiles", args => {
-		const linkedMap = $gameMap ? $gameMap.linkedMap() : null;
-		const xyz = Tyruswoo.TileControl.extract_xyz_array(args, linkedMap);
+		const xyz = Tyruswoo.TileControl.extract_xyz_array(args);
 		const relativity = args.relativity ? JSON.parse(args.relativity) : defaultRelativity;
 		const filters = args.filters ? JSON.parse(args.filters) : defaultFilters;
 		const region_filter = filters.region_filter ? JSON.parse(filters.region_filter) : defaultRegionFilter;
@@ -1145,29 +1064,16 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	PluginManager.registerCommand(pluginName, "change_animation_frames", args => {
 		Tyruswoo.TileControl._tileAnimationFrames = args.tileAnimationFrames;
 	});
-
-	// link_map
-	PluginManager.registerCommand(pluginName, "link_map", args => {
-		const mapId = /^\d+$/.test(args.map) ? Number(args.map) :
-			Tyruswoo.EventAI.getMapIdByName(args.map);
-		$gameMap.linkMap(mapId);
-	});
-
-	// unlink_map
-	PluginManager.registerCommand(pluginName, "unlink_map", args => {
-		$gameMap.unlinkMap();
-	});
 	
 	//=============================================================================
 	// Game_Interpreter
 	//=============================================================================
 
-	// Alias method
+	// Alias method.
 	// Plugin Command
 	Tyruswoo.TileControl.Game_Interpreter_command357 = Game_Interpreter.prototype.command357;
 	Game_Interpreter.prototype.command357 = function(params) {
-		// Keep track of the most recent event that used a plugin command.
-		Tyruswoo.TileControl._pluginCommandEventId = this.eventId(); 
+		Tyruswoo.TileControl._pluginCommandEventId = this.eventId(); //Keep track of the most recent event that used a plugin command.
 		return Tyruswoo.TileControl.Game_Interpreter_command357.call(this, params);
 	};
 
@@ -1179,17 +1085,14 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// Updates the tilemap for each frame.
 	Tilemap.prototype.update = function() {
 		this.animationCount++;
-		// Use animation frames as set by user.
-		this.animationFrame = Math.floor(
-			this.animationCount / Tyruswoo.TileControl._tileAnimationFrames); 
+		this.animationFrame = Math.floor(this.animationCount / Tyruswoo.TileControl._tileAnimationFrames); //Use animation frames as set by user.
 		for (const child of this.children) {
 			// Thanks to Cris Litvin for helping us find and fix the bug on the line below!
 			if (child && child.update) {
 				child.update();
 			}
 		}
-		if ($gameMap._needsTilemapRefresh) {
-			// If a tile is set, then the tilemap needs to refresh.
+		if ($gameMap._needsTilemapRefresh) { //If a tile is set, then the tilemap needs to refresh.
 			$gameMap._needsTilemapRefresh = false;
 			this.refresh();
 		}
@@ -1202,7 +1105,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// Replacement method
 	Game_Player.prototype.triggerButtonAction = function() {
 		if (Input.isTriggered("ok")) {
-			if (Tyruswoo.TileControl.param.tileInfoOnOkPress && Input.isPressed("control")) {
+			if(Tyruswoo.TileControl.param.tileInfoOnOkPress && Input.isPressed("control")) {
 				$gameMap.logTileInfo($gamePlayer.x, $gamePlayer.y);
 			}
 			if (this.getOnOffVehicle()) {
@@ -1216,9 +1119,8 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			if ($gameMap.setupStartingEvent()) {
 				return true;
 			}
-			if (Tyruswoo.TileControl.param.commonEventOnOkPress > 0) {
-				$gameTemp.reserveCommonEvent(
-					Tyruswoo.TileControl.param.commonEventOnOkPress);
+			if(Tyruswoo.TileControl.param.commonEventOnOkPress > 0) {
+				$gameTemp.reserveCommonEvent(Tyruswoo.TileControl.param.commonEventOnOkPress);
 				return true;
 			}
 		}
@@ -1226,7 +1128,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	};
 
 	//=============================================================================
-	// Game_Map expansion
+	// Game_Map
 	//=============================================================================
 
 	// Alias method
@@ -1235,6 +1137,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	Game_Map.prototype.initialize = function(mapId) {
 		Tyruswoo.TileControl.Game_Map_initialize.call(this, mapId);
 		this._needsTilemapRefresh = false;
+		this._tileChanges = {};
 	};
 
 	// Alias method
@@ -1242,94 +1145,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	Tyruswoo.TileControl.Game_Map_setup = Game_Map.prototype.setup;
 	Game_Map.prototype.setup = function(mapId) {
 		Tyruswoo.TileControl.Game_Map_setup.call(this, mapId);
-		delete this._mapToEdit; // Remove save-bloating legacy member
-		this.unlinkMap();
-	};
-
-	// New method
-	// Link Map
-	Game_Map.prototype.linkMap = function(mapId) {
-		if (mapId == this.mapId()) {
-			this.unlinkMap(); // Editing local map
-			return;
-		}
-		if (!mapId || mapId < 0) {
-			throw new Error("Can't link invalid map ID: " + mapId);
-			return;
-		}
-
-		// If you're here, there's a remote map ID to link.
-		this._linkedMapId = mapId;
-	};
-
-	// New method
-	// Unlink Map
-	Game_Map.prototype.unlinkMap = function() {
-		this._linkedMapId = null;
-	};
-
-	// New method
-	Game_Map.prototype.isTileEditingLocal = function() {
-		return !this._linkedMapId;
-	};
-
-	// New method
-	Game_Map.prototype.isTileEditingRemote = function() {
-		return !this.isTileEditingLocal();
-	};
-
-	Game_Map.prototype.editingMapId = function() {
-		return this._linkedMapId || this._mapId;
-	};
-
-	// New method
-	Game_Map.prototype.linkedMapId = function() {
-		return this._linkedMapId;
-	};
-
-	Game_Map.prototype.mapToEdit = function() {
-		return Tyruswoo.TileControl.getEditingMap();
-	};
-
-	// New method
-	Game_Map.prototype.linkedMap = function() {
-		return this._linkedMapId ? this.mapToEdit() : null;
-	};
-
-	// New method
-	Game_Map.prototype.isLinkedValid = function(x, y) {
-		const map = this.mapToEdit();
-		return x >= 0 && x < map.width && y >= 0 && y < map.height;
-	};
-
-	// New method
-	Game_Map.prototype.linkedTilesetId = function() {
-		return this.mapToEdit().tilesetId;
-	};
-
-	// New method
-	// like Game_Map.prototype.autotileType,
-	// except it works with the linked map, if any, or this map otherwise.
-	Game_Map.prototype.linkedAutotileType = function(x, y, z) {
-		const tileId = this.linkedTileId(x, y, z);
-		return tileId >= 2048 ? Math.floor((tileId - 2048) / 48) : -1;
-	};
-
-	// New method
-	// Like Game_Map.prototype.regionId,
-	// except it works with the linked map, if any, or this map otherwise.
-	Game_Map.prototype.linkedRegionId = function(x, y) {
-		return this.isLinkedValid(x, y) ? this.linkedTileId(x, y, 5) : 0;
-	};
-
-	// New method
-	// Like Game_Map.prototype.tileId,
-	// except it works with the linked map, if any, or this map otherwise.
-	Game_Map.prototype.linkedTileId = function(x, y, z) {
-		const map = this.mapToEdit();
-		const width = map.width;
-		const height = map.height;
-		return map.data[(z * height + y) * width + x] || 0;
+		this._tileChanges = this.getTileChangeData(mapId);
 	};
 
 	// New method
@@ -1347,7 +1163,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// New method
 	// This method is useful as a script in a Conditional Branch.
 	Game_Map.prototype.tileCodeAt = function(x, y, z) {
-		const tileId = this.linkedTileId(x, y, z);
+		const tileId = this.tileId(x, y, z);
 		return Tyruswoo.TileControl.tileCodeFromId(tileId);
 	};
 
@@ -1356,121 +1172,14 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	Game_Map.prototype.tileCode = function(x, y, z) {
 		return this.tileCodeAt(x, y, z);
 	};
-	
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	// tileIdList may be an integer, a tileCode string, or an array of integers and/or tileCode strings.
-	Game_Map.prototype.tileIdInList = function(tileIdList, xCoord, yCoord, z = 0) {
-		var x = xCoord ? xCoord : $gamePlayer.x;
-		var y = yCoord ? yCoord : $gamePlayer.y;
-		var tileIdInList = false;
-		if (tileIdList) {
-			const tileId = this.linkedTileId(x, y, z);
-			if (typeof tileIdList === 'number') {
-				if (tileId === tileIdList) {
-					tileIdInList = true;
-				}
-			} else if (typeof tileIdList === 'string') {
-				tileIdList = this.readTileCode(tileIdList);
-				if (tileId === tileIdList) {
-					tileIdInList = true;
-				}
-			} else if (tileIdList.length) {
-				for (var i = 0; i < tileIdList.length; i++) {
-					if (typeof tileIdList[i] === 'string') {
-						tileIdList[i] = this.readTileCode(tileIdList[i]);
-					}
-					if (tileId === tileIdList[i]) {
-						tileIdInList = true;
-					}
-				}
-			}
-		}
-		return tileIdInList;
-	};
-
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	// Looks a distance ahead of the player to determine the tile there at indicated z level.
-	Game_Map.prototype.tileIdInListAhead = function(tileIdList, distance = 1, z = 0) {
-		var x = $gamePlayer.x;
-		var y = $gamePlayer.y;
-		var d = $gamePlayer.direction();
-		for (var i = 0; i < distance; i++) {
-			x = this.xWithDirection(x, d); // Find tile in this direction.
-			y = this.yWithDirection(y, d);
-		}
-		return this.tileIdInList(tileIdList, x, y, z);
-	};
-	
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	Game_Map.prototype.tileAhead = function(tileIdList, distance = 1, z = 0) {
-		return this.tileIdInListAhead(tileIdList, distance, z);
-	};
-	
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	// autotileList may be an integer, a tileCode string, or an array of integers and/or tileCode strings.
-	Game_Map.prototype.autotileInList = function(autotileList, xCoord, yCoord, z = 0) {
-		var x = xCoord ? xCoord : $gamePlayer.x;
-		var y = yCoord ? yCoord : $gamePlayer.y;
-		var autotileInList = false;
-		if (autotileList) {
-			const autotile = this.autotileType(x, y, z);
-			if (typeof autotileList === 'number') {
-				if (autotile === autotileList) {
-					autotileInList = true;
-				}
-			} else if (typeof autotileList === 'string') {
-				autotileList = this.readTileCode(autotileList);
-				autotileList = this.autotileTypeById(autotileList);
-				if (autotile === autotileList) {
-					autotileInList = true;
-				}
-			} else if (autotileList.length) {
-				for (var i = 0; i < autotileList.length; i++) {
-					if (typeof autotileList[i] === 'string') {
-						autotileList[i] = this.readTileCode(autotileList[i]);
-						autotileList[i] = this.autotileTypeById(autotileList[i]);
-					}
-					if (autotile === autotileList[i]) {
-						autotileInList = true;
-					}
-				}
-			}
-		}
-		return autotileInList;
-	};
-	
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	// Looks a distance ahead of the player to determine the autotile type there at indicated z level.
-	Game_Map.prototype.autotileInListAhead = function(autotileList, distance = 1, z = 0) {
-		var x = $gamePlayer.x;
-		var y = $gamePlayer.y;
-		var d = $gamePlayer.direction();
-		for (var i = 0; i < distance; i++) {
-			x = this.xWithDirection(x, d); // Find tile in this direction.
-			y = this.yWithDirection(y, d);
-		}
-		return this.autotileInList(autotileList, x, y, z);
-	};
-	
-	// New method
-	// This method is useful as a script in a Conditional Branch.
-	Game_Map.prototype.autotileAhead = function(autotileList, distance = 1, z = 0) {
-		return this.autotileInListAhead(autotileList, distance, z);
-	};
 
 	// New method
 	Game_Map.prototype.logTileInfo = function(x, y) {
-		// CAUTION: This log only works reliably for local tile changes.
 		var output = "Tile Info at (" + x + "," + y + "):\n";
 		const flags = this.tilesetFlags();
-		for (z = 0; z <= 3; z++) {
-			var tileId = this.linkedTileId(x, y, z);
-			var a = this.linkedAutotileType(x, y, z);
+		for(z = 0; z <= 3; z++) {
+			var tileId = this.tileId(x, y, z);
+			var a = this.autotileType(x, y, z);
 			var tileCode = this.tileCodeAt(x, y, z);
 			var flag = flags[tileId];
 			var flag_text = flag + " (0b" + flag.toString(2) + ") (0x" + flag.toString(16) + ")";
@@ -1483,18 +1192,18 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		}
 		output += "\x1b[30mSpecial properties from flags:";
 		var text6 = "";
-		if (this.isLadder(x, y)) {text6 += "\x1b[34m Ladder";}
-		if (this.isBush(x, y)) {text6 += "\x1b[34m Bush";}
-		if (this.isCounter(x, y)) {text6 += "\x1b[34m Counter";}
-		if (this.isDamageFloor(x, y)) {text6 += "\x1b[34m DamageFloor";}
-		if (this.isBoatPassable(x, y)) {text6 += "\x1b[34m BoatPassable";}
-		if (this.isShipPassable(x, y)) {text6 += "\x1b[34m ShipPassable";}
-		if (this.isAirshipLandOk(x, y)) {text6 += "\x1b[34m AirshipLandOk";}
-		if (!text6.length) {output += "\x1b[30m None.";}
+		if(this.isLadder(x, y)) {text6 += "\x1b[34m Ladder";};
+		if(this.isBush(x, y)) {text6 += "\x1b[34m Bush";};
+		if(this.isCounter(x, y)) {text6 += "\x1b[34m Counter";};
+		if(this.isDamageFloor(x, y)) {text6 += "\x1b[34m DamageFloor";};
+		if(this.isBoatPassable(x, y)) {text6 += "\x1b[34m BoatPassable";};
+		if(this.isShipPassable(x, y)) {text6 += "\x1b[34m ShipPassable";};
+		if(this.isAirshipLandOk(x, y)) {text6 += "\x1b[34m AirshipLandOk";};
+		if(!text6.length) {output += "\x1b[30m None.";};
 		output += text6 + "\n";
 		var s = this.shadowBits(x, y);
 		s = s + " (0b" + s.toString(2) + ")";
-		const r = this.linkedRegionId(x, y);
+		const r = this.regionId(x, y);
 		const t = this.terrainTag(x, y);
 		output += "\x1b[30mShadow Bits: \x1b[34m" + s + "\n" + "\x1b[30mTile Region: \x1b[34m" + r + "\n" + "\x1b[30mTerrain Tag: \x1b[34m" + t;
 		console.log(output);
@@ -1502,7 +1211,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 	// New method
 	Game_Map.prototype.shadowBits = function(x, y) {
-		return this.isLinkedValid(x, y) ? this.linkedTileId(x, y, 4) : 0;
+		return this.isValid(x, y) ? this.tileId(x, y, 4) : 0;
 	};
 
 	// New method
@@ -1510,29 +1219,27 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		x = Math.round(x);
 		y = Math.round(y);
 		z = Math.round(z);
-		const map = this.mapToEdit();
-		if (x < 0 || x >= map.width ||
-		   y < 0 || y >= map.height) { //Prevent attempts to change tiles at locations outside the bounds of the map.
+		if(x < 0 || x >= this.width() || y < 0 || y >= this.height()) { //Prevent attempts to change tiles at locations outside the bounds of the map.
 			return false;
-		}
+		};
 		tileId = this.readTileCode(tileId);
-		if (typeof clearUpperLayers != 'boolean') {
+		if(typeof clearUpperLayers != 'boolean') {
 			clearUpperLayers = (clearUpperLayers == 'true') ? true : false;
-		}
-		if (typeof allowAutotiling != 'boolean') {
+		};
+		if(typeof allowAutotiling != 'boolean') {
 			allowAutotiling = (allowAutotiling == 'true') ? true : false;
-		}
-		if (clearUpperLayers) {
+		};
+		if(clearUpperLayers) {
 			for (var zz = z + 1; zz < 4; zz++) {
 				this.setExactTileId(x, y, zz, 0);
-			}
-		}
+			};
+		};
 		const a = this.autotileTypeById(tileId);
-		if (allowAutotiling && a > -1) {
+		if(allowAutotiling && a > -1) {
 			tileId = this.shapeAutotile(x, y, z, a) ? this.shapeAutotile(x, y, z, a) : tileId;
-		}
+		};
 		this.setExactTileId(x, y, z, tileId);
-		if (allowAutotiling) {
+		if(allowAutotiling) {
 			this.autotileNeighbor(x, y, z);
 			this.autotileNeighbor(x, y - 1, z);
 			this.autotileNeighbor(x + 1, y, z);
@@ -1542,7 +1249,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			this.autotileNeighbor(x - 1, y + 1, z);
 			this.autotileNeighbor(x + 1, y - 1, z);
 			this.autotileNeighbor(x + 1, y + 1, z);
-		}
+		};
 	};
 
 	// New method
@@ -1552,15 +1259,15 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		var codeNumber = -1;
 		var codeX = 0;
 		var codeY = 0;
-		if (typeof arg == "string") {
-			if (arg.charAt(2) && arg.charAt(2) == ',') {
+		if(typeof arg == "string") {
+			if(arg.charAt(2) && arg.charAt(2) == ',') {
 				codeX = parseInt(arg.charAt(1));
 				codeY = parseInt(arg.substr(3));
 				codeNumber = (codeY * TILE_SELECTOR_ROW_SIZE) + codeX;
 			} else {
 				codeNumber = parseInt(arg.substr(1));
-			}
-		}
+			};
+		};
 		switch(codeLetter) {
 			case 'a':
 				let sheetNumber = Tyruswoo.TileControl.getSheetNumberOfCode(codeNumber);
@@ -1568,7 +1275,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 					tileId = Tilemap.TILE_ID_A1 + codeNumber * 48;
 				} else { // A5 tiles
 					tileId = Tilemap.TILE_ID_A5 + codeNumber - 128;
-				}
+				};
 				break;
 			case 'b':
 				tileId = Tilemap.TILE_ID_B + codeNumber;
@@ -1584,7 +1291,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 				break;
 			default:
 				tileId = arg;
-		}
+		};
 		return tileId;
 	};
 
@@ -1595,52 +1302,41 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 	// New method
 	Game_Map.prototype.setExactTileId = function(x, y, z, tileId) {
-		if (!Tyruswoo.TileControl.tileIdExists(this.linkedTilesetId(), tileId)) {
+		if (!Tyruswoo.TileControl.tileIdExists(this._tilesetId, tileId)) {
 			const tileSheetName = Tyruswoo.TileControl.getTileSheetNameOfTileId(tileId);
 			console.warn("Tile ID %1 is on Sheet %2, which does not exist in Tileset %3.\nTile was not placed.".format(
 			tileId, tileSheetName, this._tilesetId));
 			return;
 		}
-		const map = this.mapToEdit();
-		const mapId = this.editingMapId();
-		const index = (z * map.height + y) * map.width + x;
-		if (!$gameTileChanges[mapId]) {
-			$gameTileChanges[mapId] = {};
-		}
-		$gameTileChanges[mapId][index] = tileId;
-		map.data[index] = tileId;
-		if (this.isTileEditingLocal()) {
-			$dataMap.data[index] = tileId;
-			// Every time a tile ID is set on this map, refresh.
-			this._needsTilemapRefresh = true; 
-		}
+		const index = (z * $dataMap.height + y) * $dataMap.width + x;
+		$dataMap.data[index] = tileId;
+		this._tileChanges[index] = tileId;
+		this._needsTilemapRefresh = true; //Every time a tile ID is set, refresh.
 	};
 
 	// New method
 	// Use this when correct autotileType is already present on the map's tile, but it just needs to be re-shaped.
 	Game_Map.prototype.autotileNeighbor = function(x, y, z) {
-		const map = this.mapToEdit();
-		if (x < 0 || x >= map.width || y < 0 || y >= map.height) {
+		if(x < 0 || x >= $gameMap.width() || y < 0 || y >= $gameMap.height()) {
 			return;
-		}
-		for (var zz = z; zz < 4; zz++) {
-			var a = this.linkedAutotileType(x, y, zz);
+		};
+		for(var zz = z; zz < 4; zz++) {
+			var a = this.autotileType(x, y, zz);
 			if (a > -1) {
 				const tileId = this.shapeAutotile(x, y, zz, a);
 				this.setExactTileId(x, y, zz, tileId);
-			}
-		}
+			};
+		};
 	};
 
 	// New method
 	// Use this when autotileType is known but not yet present on the map's tile.
 	Game_Map.prototype.shapeAutotile = function(x, y, z, a) {
-		if (a <= -1) { //Check if this is an autotile. If this is not an autotile, we must not try to shape it.
+		if(a <= -1) { //Check if this is an autotile. If this is not an autotile, we must not try to shape it.
 			console.log("Game_Map.shapeAutotile(): \x1b[31mWarning!\x1b[30m\nAt coords x", x, "y", y, "z", z, "attempted shapeAutotile function on autotileType", a, "which is not an autotile.");
 			return false;
-		}
-		const map = this.mapToEdit();
-		var n = false; // Keep track of whether there is a matching autotile neighboring in the given direction.
+		};
+		var n = false; //Keep track of whether there is a matching autotile neighboring in the given direction.
 		var e = false;
 		var s = false;
 		var w = false;
@@ -1648,31 +1344,31 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		var ne = false;
 		var se = false;
 		var sw = false;
-		const a_n = this.linkedAutotileType(x, y - 1, z); //Determine the autotile type of neighboring tiles.
-		const a_e = this.linkedAutotileType(x + 1, y, z);
-		const a_s = this.linkedAutotileType(x, y + 1, z);
-		const a_w = this.linkedAutotileType(x - 1, y, z);
-		const a_nw = this.linkedAutotileType(x - 1, y - 1, z);
-		const a_ne = this.linkedAutotileType(x + 1, y - 1, z);
-		const a_se = this.linkedAutotileType(x + 1, y + 1, z);
-		const a_sw = this.linkedAutotileType(x - 1, y + 1, z);
-		if (a_n == a || y - 1 < 0) {n = true;} //If the neighboring tile's autotile type matches the current tile's autotile type, then remember this.
-		if (a_e == a || x + 1 >= map.width) {e = true;}
-		if (a_s == a || y + 1 >= map.height) {s = true;}
-		if (a_w == a || x - 1 < 0) {w = true;}
-		if (a_nw == a || y - 1 < 0 || x - 1 < 0) {nw = true;}
-		if (a_ne == a || y - 1 < 0 || x + 1 >= map.width) {ne = true;}
-		if (a_se == a || y + 1 >= map.height || x + 1 >= map.width) {se = true;}
-		if (a_sw == a || y + 1 >= map.height || x - 1 < 0) {sw = true;}
+		const a_n = this.autotileType(x, y - 1, z); //Determine the autotile type of neighboring tiles.
+		const a_e = this.autotileType(x + 1, y, z);
+		const a_s = this.autotileType(x, y + 1, z);
+		const a_w = this.autotileType(x - 1, y, z);
+		const a_nw = this.autotileType(x - 1, y - 1, z);
+		const a_ne = this.autotileType(x + 1, y - 1, z);
+		const a_se = this.autotileType(x + 1, y + 1, z);
+		const a_sw = this.autotileType(x - 1, y + 1, z);
+		if(a_n == a || y - 1 < 0) {n = true;}; //If the neighboring tile's autotile type matches the current tile's autotile type, then remember this.
+		if(a_e == a || x + 1 >= $gameMap.width()) {e = true;};
+		if(a_s == a || y + 1 >= $gameMap.height()) {s = true;};
+		if(a_w == a || x - 1 < 0) {w = true;};
+		if(a_nw == a || y - 1 < 0 || x - 1 < 0) {nw = true;};
+		if(a_ne == a || y - 1 < 0 || x + 1 >= $gameMap.width()) {ne = true;};
+		if(a_se == a || y + 1 >= $gameMap.height() || x + 1 >= $gameMap.width()) {se = true;};
+		if(a_sw == a || y + 1 >= $gameMap.height() || x - 1 < 0) {sw = true;};
 		const baseTileId = a * 48 + 2048;
 		var tileId = baseTileId;
-		if (Tilemap.isWaterfallTile(baseTileId)) { //Waterfall Animation Autotiles
+		if(Tilemap.isWaterfallTile(baseTileId)) { //Waterfall Animation Autotiles
 			tileId += this.calculateWaterfallShape(e, w);
-		} else if (Tilemap.isTileA3(baseTileId) || Tilemap.isWallSideTile(baseTileId)) { //Buildings Autotiles
+		} else if(Tilemap.isTileA3(baseTileId) || Tilemap.isWallSideTile(baseTileId)) { //Buildings Autotiles
 			tileId += this.calculateAutotileNESWShape(n, e, s, w);
 		} else { //All other autotiles.
 			tileId += this.calculateAutotileShape(n, e, s, w, nw, ne, se, sw);
-		}
+		};
 		return tileId;
 	};
 
@@ -1685,55 +1381,55 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// in the corresponding direction from the autotile being shaped.
 	Game_Map.prototype.calculateAutotileShape = function(n, e, s, w, nw, ne, se, sw) {
 		var shape = 0;
-		if (n && e && s && w) { //Shapes 0-15.
-			if (!nw) shape += 1;
-			if (!ne) shape += 2;
-			if (!se) shape += 4;
-			if (!sw) shape += 8;
-		} else if (n && e && s && !w){ //Shapes 16-19.
+		if(n && e && s && w) { //Shapes 0-15.
+			if(!nw) shape += 1;
+			if(!ne) shape += 2;
+			if(!se) shape += 4;
+			if(!sw) shape += 8;
+		} else if(n && e && s && !w){ //Shapes 16-19.
 			shape += 16;
-			if (!ne) shape += 1;
-			if (!se) shape += 2;
-		} else if (!n && e && s && w){ //Shapes 20-23.
+			if(!ne) shape += 1;
+			if(!se) shape += 2;
+		} else if(!n && e && s && w){ //Shapes 20-23.
 			shape += 20;
-			if (!se) shape += 1;
-			if (!sw) shape += 2;
-		} else if (n && !e && s && w){ //Shapes 24-27.
+			if(!se) shape += 1;
+			if(!sw) shape += 2;
+		} else if(n && !e && s && w){ //Shapes 24-27.
 			shape += 24;
-			if (!sw) shape += 1;
-			if (!nw) shape += 2;
-		} else if (n && e && !s && w){ //Shapes 28-31.
+			if(!sw) shape += 1;
+			if(!nw) shape += 2;
+		} else if(n && e && !s && w){ //Shapes 28-31.
 			shape += 28;
-			if (!nw) shape += 1;
-			if (!ne) shape += 2;
-		} else if (n && !e && s && !w){ //Shape 32.
+			if(!nw) shape += 1;
+			if(!ne) shape += 2;
+		} else if(n && !e && s && !w){ //Shape 32.
 			shape += 32;
-		} else if (!n && e && !s && w){ //Shape 33.
+		} else if(!n && e && !s && w){ //Shape 33.
 			shape += 33;
-		} else if (!n && e && s && !w){ //Shapes 34-35.
+		} else if(!n && e && s && !w){ //Shapes 34-35.
 			shape += 34;
-			if (!se) shape += 1;
-		} else if (!n && !e && s && w){ //Shapes 36-37.
+			if(!se) shape += 1;
+		} else if(!n && !e && s && w){ //Shapes 36-37.
 			shape += 36;
-			if (!sw) shape += 1;
-		} else if (n && !e && !s && w){ //Shapes 38-39.
+			if(!sw) shape += 1;
+		} else if(n && !e && !s && w){ //Shapes 38-39.
 			shape += 38;
-			if (!nw) shape += 1;
-		} else if (n && e && !s && !w){ //Shapes 40-41.
+			if(!nw) shape += 1;
+		} else if(n && e && !s && !w){ //Shapes 40-41.
 			shape += 40;
-			if (!ne) shape += 1;
-		} else if (!n && !e && s && !w){ //Shape 42.
+			if(!ne) shape += 1;
+		} else if(!n && !e && s && !w){ //Shape 42.
 			shape += 42;
-		} else if (!n && e && !s && !w){ //Shape 43.
+		} else if(!n && e && !s && !w){ //Shape 43.
 			shape += 43;
-		} else if (n && !e && !s && !w){ //Shape 44.
+		} else if(n && !e && !s && !w){ //Shape 44.
 			shape += 44;
-		} else if (!n && !e && !s && w){ //Shape 45.
+		} else if(!n && !e && !s && w){ //Shape 45.
 			shape += 45;
-		} else if (!n && !e && !s && !w){ //Shape 46
+		} else if(!n && !e && !s && !w){ //Shape 46
 			shape += 46;
 			//tileId+47 (Shape 47) is not used; it is a duplicate of tileId+46 (Shape 46).
-		}
+		};
 		return shape;
 	};
 
@@ -1741,13 +1437,13 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// For calculating the shape (appearance) of waterfall tiles.
 	Game_Map.prototype.calculateWaterfallShape = function(e, w) {
 		var shape = 0; //Shape 0.
-		if (e && !w) { //Shape 1.
+		if(e && !w) { //Shape 1.
 			shape += 1;
-		} else if (!e && w) { //Shape 2.
+		} else if(!e && w) { //Shape 2.
 			shape += 2;
-		} else if (!e && !w) { //Shape 3.
+		} else if(!e && !w) { //Shape 3.
 			shape += 3;
-		}
+		};
 		return shape;
 	};
 
@@ -1755,10 +1451,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// For calculating the shape (appearance) of building (roof and building edge) tiles (A3 tiles), and wall side tiles (certain A4 tiles).
 	Game_Map.prototype.calculateAutotileNESWShape = function(n, e, s, w) {
 		var shape = 0; //Shapes 0-15.
-		if (!w) shape += 1;
-		if (!n) shape += 2;
-		if (!e) shape += 4;
-		if (!s) shape += 8;
+		if(!w) shape += 1;
+		if(!n) shape += 2;
+		if(!e) shape += 4;
+		if(!s) shape += 8;
 		return shape;
 	};
 
@@ -1769,211 +1465,198 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		x = Math.round(x);
 		y = Math.round(y);
 		z = Math.round(z);
-		const map = this.mapToEdit();
-		const width = map.width;
-		const height = map.height;
-		if (x < 0 || x >= width || y < 0 || y >= height) { //Prevent attempts to change tiles at locations outside the bounds of the map.
+		const width = this.width();
+		const height = this.height();
+		if(x < 0 || x >= width || y < 0 || y >= height) { //Prevent attempts to change tiles at locations outside the bounds of the map.
 			return false;
-		}
+		};
 		tileId = this.readTileCode(tileId);
-		if (typeof clearUpperLayers != 'boolean') {
+		if(typeof clearUpperLayers != 'boolean') {
 			clearUpperLayers = (clearUpperLayers == "true") ? true : false;
-		}
-		if (typeof allowAutotiling != 'boolean') {
+		};
+		if(typeof allowAutotiling != 'boolean') {
 			allowAutotiling = (allowAutotiling == "true") ? true : false;
-		}
-		if (typeof hollow != 'boolean') {
+		};
+		if(typeof hollow != 'boolean') {
 			hollow = (hollow == "true") ? true : false;
-		}
+		};
 		creepDistance = Number(creepDistance);
 		var tiles = [];
-		for (var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map.
-			for (var xx = 0; xx < width; xx++) {
+		for(var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map.
+			for(var xx = 0; xx < width; xx++) {
 				const tile = {x:xx, y:yy};
 				tiles.push(tile);
-			}
-		}
-		if (regions && regions.length) { //Region(s) filter.
+			};
+		};
+		if(regions && regions.length) { //Region(s) filter.
 			const tilesInRegion = this.regionsFilter(tiles, regions);
-			if (!tilesInRegion.length && tiles.length) {
+			if(!tilesInRegion.length && tiles.length) {
 				console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", tiles.length, "tiles entered into the Region(s) filter, none of the tiles passed the Region(s) filter.");
-			}
+			};
 			tiles = tilesInRegion;
-		}
-		if (tileIds_filter && tileIds_filter.length) { //Tile ID(s) filter.
+		};
+		if(tileIds_filter && tileIds_filter.length) { //Tile ID(s) filter.
 			const tilesMatchingTileIdsFilter = this.tileIdsFilter(tiles, tileIds_filter, tileIds_z_filter);
-			if (!tilesMatchingTileIdsFilter.length && tiles.length) {
+			if(!tilesMatchingTileIdsFilter.length && tiles.length) {
 				console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", tiles.length, "tiles entered into the Tile ID(s) filter, none of the tiles passed the Tile ID(s) filter.");
-			}
+			};
 			tiles = tilesMatchingTileIdsFilter;
-		}
-		if (area_filter) { //Area filter.
+		};
+		if(area_filter) { //Area filter.
 			const tilesInArea = this.areaFilter(tiles, area_filter, x, y);
-			if (!tilesInArea.length && tiles.length) {
+			if(!tilesInArea.length && tiles.length) {
 				console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", tiles.length, "tiles entered into the Area filter, none of the tiles passed the Area filter.");
-			}
+			};
 			tiles = tilesInArea;
-		}
-		if (distance && Number(distance)) { //Distance (adjacent) filter.
+		};
+		if(distance && Number(distance)) { //Distance (adjacent) filter.
 			const originTiles = [];
 			const originTile = {x:x, y:y};
 			originTiles.push(originTile);
 			const tilesInDistance = this.distanceFilter(tiles, distance, originTiles);
-			if (!tilesInDistance.length && tiles.length) {
+			if(!tilesInDistance.length && tiles.length) {
 				console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", tiles.length, "tiles entered into the Distance filter, none of the tiles passed the Distance filter.");
-			}
+			};
 			tiles = tilesInDistance;
-		}
-		if (hollow) { //Hollow filter.
+		};
+		if(hollow) { //Hollow filter.
 			const tilesAtEdge = this.hollowFilter(tiles);
 			tiles = tilesAtEdge;
-		}
-		if (origin && origin == "Never Fill") { //Origin filter: Never Fill
+		};
+		if(origin && origin == "Never Fill") { //Origin filter: Never Fill
 			const tilesWithoutOrigin = [];
-			for (var t = 0; t < tiles.length; t++) {
-				if ((tiles[t].x != x) || (tiles[t].y != y)) {
+			for(var t = 0; t < tiles.length; t++) {
+				if((tiles[t].x != x) || (tiles[t].y != y)) {
 					tilesWithoutOrigin.push(tiles[t]);
-				}
-			}
+				};
+			};
 			tiles = tilesWithoutOrigin;
-		}
-		if (origin && origin == "Always Fill (Before Creep)") { //Origin filter: Always Fill (Before Creep)
+		};
+		if(origin && origin == "Always Fill (Before Creep)") { //Origin filter: Always Fill (Before Creep)
 			var originAlreadyIncluded = false;
-			for (var t; t < tiles.length; t++) {
-				if ((tiles[t].x == x) && (tiles[t].y == y)) {
+			for(var t; t < tiles.length; t++) {
+				if((tiles[t].x == x) && (tiles[t].y == y)) {
 					originAlreadyIncluded = true;
-				}
-			}
-			if (!originAlreadyIncluded) {
+				};
+			};
+			if(!originAlreadyIncluded) {
 				const originTile = {x:x, y:y};
 				tiles.push(originTile);
-			}
-		}
-		if (tileId) { //If there is a tileId, then fill tiles with tileId.
-			for (var t = 0; t < tiles.length; t++) {
+			};
+		};
+		if(tileId) { //If there is a tileId, then fill tiles with tileId.
+			for(var t = 0; t < tiles.length; t++) {
 				this.setTileId(tiles[t].x, tiles[t].y, z, tileId, clearUpperLayers, allowAutotiling);
-			}
-		}
-		if (creepDistance) { //Creep
-			if (creepTileId != null && creepTileId != "") {
-				creepTileId = this.readTileCode(creepTileId);
-			} else {
-				creepTileId = tileId;
-			}
-
-			if (creepZ != null && creepZ != "") {
-				creepZ = Math.round(creepZ);
-			} else {
-				creepZ = z;
-			}
-
-			if (typeof creepClearUpperLayers != 'boolean') {
-				creepClearUpperLayers = (creepClearUpperLayers == "true");
-			}
-			if (typeof creepAllowAutotiling != 'boolean') {
-				creepAllowAutotiling = (creepAllowAutotiling == "true");
-			}
-			if (typeof creepHollow != 'boolean') {
-				creepHollow = (creepHollow == "true");
-			}
+			};
+		};
+		if(creepDistance) { //Creep
+			if(creepTileId != null && creepTileId != "") {creepTileId = this.readTileCode(creepTileId);} else {creepTileId = tileId;};
+			if(creepZ != null && creepZ != "") {creepZ = Math.round(creepZ);} else {creepZ = z;};
+			if(typeof creepClearUpperLayers != 'boolean') {
+				creepClearUpperLayers = (creepClearUpperLayers == "true") ? true : false;
+			};
+			if(typeof creepAllowAutotiling != 'boolean') {
+				creepAllowAutotiling = (creepAllowAutotiling == "true") ? true : false;
+			};
+			if(typeof creepHollow != 'boolean') {
+				creepHollow = (creepHollow == "true") ? true : false;
+			};
 			var creepTiles = [];
-			for (var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map, as long as locations are not in the Fill space.
-				for (var xx = 0; xx < width; xx++) {
+			for(var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map, as long as locations are not in the Fill space.
+				for(var xx = 0; xx < width; xx++) {
 					var inFillTiles = false;
-					for (var t = 0; t < tiles.length; t++) {
-						if ((tiles[t].x == xx) && tiles[t].y == yy) {inFillTiles = true;}
-					}
-					if (!inFillTiles) {
+					for(var t = 0; t < tiles.length; t++) {
+						if((tiles[t].x == xx) && tiles[t].y == yy) {inFillTiles = true;};
+					};
+					if(!inFillTiles) {
 						const tile = {x:xx, y:yy};
 						creepTiles.push(tile);
-					}
-				}
-			}
-			if (creepRegions && creepRegions.length) { //Creep Region(s) filter.
+					};
+				};
+			};
+			if(creepRegions && creepRegions.length) { //Creep Region(s) filter.
 				const creepTilesInRegion = this.regionsFilter(creepTiles, creepRegions);
-				if (!creepTilesInRegion.length && creepTiles.length) {
+				if(!creepTilesInRegion.length && creepTiles.length) {
 					console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", creepTiles.length, "tiles entered into the Creep Region(s) filter, none of the tiles passed the Creep Region(s) filter.");
-				}
+				};
 				creepTiles = creepTilesInRegion;
-			}
-			if (creepTileIds_filter && creepTileIds_filter.length) { //Creep Tile ID(s) filter.
+			};
+			if(creepTileIds_filter && creepTileIds_filter.length) { //Creep Tile ID(s) filter.
 				const creepTilesMatchingTileIdsFilter = this.tileIdsFilter(creepTiles, creepTileIds_filter, creepTileIds_z_filter);
-				if (!creepTilesMatchingTileIdsFilter.length && creepTiles.length) {
+				if(!creepTilesMatchingTileIdsFilter.length && creepTiles.length) {
 					console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", creepTiles.length, "tiles entered into the Creep Tile ID(s) filter, none of the tiles passed the Creep Tile ID(s) filter.");
-				}
+				};
 				creepTiles = creepTilesMatchingTileIdsFilter;
-			}
-			if (creepArea_filter) { //Creep Area filter.
+			};
+			if(creepArea_filter) { //Creep Area filter.
 				const creepTilesInArea = this.areaFilter(creepTiles, creepArea_filter, x, y);
-				if (!creepTilesInArea.length && creepTiles.length) {
+				if(!creepTilesInArea.length && creepTiles.length) {
 					console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", creepTiles.length, "tiles entered into the Creep Area filter, none of the tiles passed the Creep Area filter.");
-				}
+				};
 				creepTiles = creepTilesInArea;
-			}
-			if (creepDistance) { //Creep Distance (adjacent) filter.
+			};
+			if(creepDistance) { //Creep Distance (adjacent) filter.
 				const excludeOrigin = true;
 				const creepTilesInDistance = this.distanceFilter(creepTiles.concat(tiles), creepDistance, tiles, excludeOrigin); //Find all creepTiles that are creepDistance away from any of the Fill tiles.
-				if (!creepTilesInDistance.length && creepTiles.length) {
+				if(!creepTilesInDistance.length && creepTiles.length) {
 					console.log("\x1b[31mTile Fill: Warning!\x1b[30m\nOf", creepTiles.length, "tiles entered into the Creep Distance filter, none of the tiles passed the Creep Distance filter.");
-				}
+				};
 				creepTiles = creepTilesInDistance;
-			}
-			if (creepHollow) { //Creep Hollow filter.
+			};
+			if(creepHollow) { //Creep Hollow filter.
 				const creepTilesAtEdge = this.hollowFilter(creepTiles);
 				creepTiles = creepTilesAtEdge;
-			}
-			if (creepTileId !== null) { //If there is a creepTildId, then apply creep.
-				for (var t = 0; t < creepTiles.length; t++) {
+			};
+			if(creepTileId !== null) { //If there is a creepTildId, then apply creep.
+				for(var t = 0; t < creepTiles.length; t++) {
 					this.setTileId(creepTiles[t].x, creepTiles[t].y, creepZ, creepTileId, creepClearUpperLayers, creepAllowAutotiling);
-				}
-			}
-		}
-		if (origin && origin == "Always Fill (After Creep)") { //Origin filter: Always Fill (After Creep)
+				};
+			};
+		};
+		if(origin && origin == "Always Fill (After Creep)") { //Origin filter: Always Fill (After Creep)
 			this.setTileId(x, y, z, tileId, clearUpperLayers, allowAutotiling);
-		}
+		};
 	};
 	
 	// New method
 	Game_Map.prototype.regionsFilter = function(tiles, regions) {
-		for (var i = 0; i < regions.length; i++) {
+		for(var i = 0; i < regions.length; i++) {
 			regions[i] = Number(regions[i]);
-		}
+		};
 		const tilesInRegion = [];
-		for (var t = 0; t < tiles.length; t++) {
-			if (regions.indexOf(this.linkedRegionId(tiles[t].x, tiles[t].y)) >= 0) {
-				tilesInRegion.push(tiles[t])
-			}
-		}
+		for(var t = 0; t < tiles.length; t++) {
+			if(regions.indexOf(this.regionId(tiles[t].x, tiles[t].y)) >= 0) {tilesInRegion.push(tiles[t])};
+		};
 		return tilesInRegion;
 	};
 	
 	// New method
 	Game_Map.prototype.tileIdsFilter = function(tiles, tileIds_filter, tileIds_z_filter) {
-		for (var i = 0; i < tileIds_filter.length; i++) {
+		for(var i = 0; i < tileIds_filter.length; i++) {
 			tileIds_filter[i] = this.readTileCode(tileIds_filter[i]);
-		}
+		};
 		const tilesMatchingTileIdsFilter = [];
-		for (var t = 0; t < tiles.length; t++) {
+		for(var t = 0; t < tiles.length; t++) {
 			var match = false;
-			for (var zz = 0; zz < 4; zz++) {
-				if (tileIds_z_filter) {
-					if (zz == 0 && tileIds_z_filter.z0 && tileIds_z_filter.z0 == "Skip") {continue;}
-					if (zz == 1 && tileIds_z_filter.z1 && tileIds_z_filter.z1 == "Skip") {continue;}
-					if (zz == 2 && tileIds_z_filter.z2 && tileIds_z_filter.z2 == "Skip") {continue;}
-					if (zz == 3 && tileIds_z_filter.z3 && tileIds_z_filter.z3 == "Skip") {continue;}
-				}
-				const tileId_1 = this.linkedTileId(tiles[t].x, tiles[t].y, zz);
-				for (var i = 0; i < tileIds_filter.length; i++) {
+			for(var zz = 0; zz < 4; zz++) {
+				if(tileIds_z_filter) {
+					if(zz == 0 && tileIds_z_filter.z0 && tileIds_z_filter.z0 == "Skip") {continue;};
+					if(zz == 1 && tileIds_z_filter.z1 && tileIds_z_filter.z1 == "Skip") {continue;};
+					if(zz == 2 && tileIds_z_filter.z2 && tileIds_z_filter.z2 == "Skip") {continue;};
+					if(zz == 3 && tileIds_z_filter.z3 && tileIds_z_filter.z3 == "Skip") {continue;};
+				};
+				const tileId_1 = this.tileId(tiles[t].x, tiles[t].y, zz);
+				for(var i = 0; i < tileIds_filter.length; i++) {
 					const tileId_2 = tileIds_filter[i];
-					if (this.isTileMatch(tileId_1, tileId_2)) {
+					if(this.isTileMatch(tileId_1, tileId_2)) {
 						match = true;
-					}
-				}
-			}
-			if (match) {
+					};
+				};
+			};
+			if(match) {
 				tilesMatchingTileIdsFilter.push(tiles[t])
-			}
-		}
+			};
+		};
 		return tilesMatchingTileIdsFilter;
 	};
 	
@@ -1984,13 +1667,13 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		const x2 = Number(area_filter.x2) ? Number(area_filter.x2) + origin_x : origin_x;
 		const y2 = Number(area_filter.y2) ? Number(area_filter.y2) + origin_y : origin_y;
 		const tilesInArea = [];
-		for (var t = 0; t < tiles.length; t++) {
-			for (var j = y1; j <= y2; j++) { //Find all tiles in this area.
-				for (var i = x1; i <= x2; i++) {
-					if (i == tiles[t].x && j == tiles[t].y) {tilesInArea.push(tiles[t])}
-				}
-			}
-		}
+		for(var t = 0; t < tiles.length; t++) {
+			for(var j = y1; j <= y2; j++) { //Find all tiles in this area.
+				for(var i = x1; i <= x2; i++) {
+					if(i == tiles[t].x && j == tiles[t].y) {tilesInArea.push(tiles[t])};
+				};
+			};
+		};
 		return tilesInArea;
 	};
 	
@@ -2000,61 +1683,61 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		const tilesInDistance = [];
 		const tilesAlreadyScanned = [];
 		var tilesToScan = originTiles;
-		for (var d = 0; d <= distance; d++) {
+		for(var d = 0; d <= distance; d++) {
 			const tilesToCheckNext = [];
-			for (var s = 0; s < tilesToScan.length; s++) {
+			for(var s = 0; s < tilesToScan.length; s++) {
 				const tilesAdjacent = [];
-				for (var t = 0; t < tiles.length; t++) {
-					if ((tilesToScan[s].x == tiles[t].x) && (tilesToScan[s].y == tiles[t].y)) {
+				for(var t = 0; t < tiles.length; t++) {
+					if((tilesToScan[s].x == tiles[t].x) && (tilesToScan[s].y == tiles[t].y)) {
 						var pushTile = true;
-						if (excludeOrigin) {
-							for (var i = 0; i < originTiles.length; i++) {
-								if ((tilesToScan[s].x == originTiles[i].x) && (tilesToScan[s].y == originTiles[i].y)) {pushTile = false;}
-							}
-						}
-						if (pushTile) {
+						if(excludeOrigin) {
+							for(var i = 0; i < originTiles.length; i++) {
+								if((tilesToScan[s].x == originTiles[i].x) && (tilesToScan[s].y == originTiles[i].y)) {pushTile = false;};
+							};
+						};
+						if(pushTile) {
 							tilesInDistance.push(tilesToScan[s]);
-						}
+						};
 						tilesAdjacent.push({x:tilesToScan[s].x+1, y:tilesToScan[s].y});
 						tilesAdjacent.push({x:tilesToScan[s].x-1, y:tilesToScan[s].y});
 						tilesAdjacent.push({x:tilesToScan[s].x, y:tilesToScan[s].y+1});
 						tilesAdjacent.push({x:tilesToScan[s].x, y:tilesToScan[s].y-1});
-					}
-				}
+					};
+				};
 				tilesAlreadyScanned.push(tilesToScan[s]);
-				for (var a = 0; a < tilesAdjacent.length; a++) {
+				for(var a = 0; a < tilesAdjacent.length; a++) {
 					var inCurrentScan = false; //If tile is currently being scanned, we do not need to scan it again.
-					for (var i = 0; i < tilesToScan.length; i++) {
-						if ((tilesAdjacent[a].x == tilesToScan[i].x) && (tilesAdjacent[a].y == tilesToScan[i].y)) {
+					for(var i = 0; i < tilesToScan.length; i++) {
+						if((tilesAdjacent[a].x == tilesToScan[i].x) && (tilesAdjacent[a].y == tilesToScan[i].y)) {
 							inCurrentScan = true;
-						}
-					}
+						};
+					};
 					var inPastScan = false; //If the tile has already been scanned, we do not need to scan it again.
-					for (var i = 0; i < tilesAlreadyScanned.length; i++) {
-						if ((tilesAdjacent[a].x == tilesAlreadyScanned[i].x) && (tilesAdjacent[a].y == tilesAlreadyScanned[i].y)) {
+					for(var i = 0; i < tilesAlreadyScanned.length; i++) {
+						if((tilesAdjacent[a].x == tilesAlreadyScanned[i].x) && (tilesAdjacent[a].y == tilesAlreadyScanned[i].y)) {
 							inPastScan = true;
-						}
-					}
+						};
+					};
 					var inTilesToCheckNext = false; //Only allow a tile to have one instance in tilesToCheckNext.
-					for (var i = 0; i < tilesToCheckNext.length; i++) {
-						if ((tilesAdjacent[a].x == tilesToCheckNext[i].x) && (tilesAdjacent[a].y == tilesToCheckNext[i].y)) {
+					for(var i = 0; i < tilesToCheckNext.length; i++) {
+						if((tilesAdjacent[a].x == tilesToCheckNext[i].x) && (tilesAdjacent[a].y == tilesToCheckNext[i].y)) {
 							inTilesToCheckNext = true;
-						}
-					}
-					if (!inCurrentScan && !inPastScan && !inTilesToCheckNext) {
+						};
+					};
+					if(!inCurrentScan && !inPastScan && !inTilesToCheckNext) {
 						tilesToCheckNext.push(tilesAdjacent[a]);
-					}
-				}
-			}
+					};
+				};
+			};
 			tilesToScan = tilesToCheckNext;
-		}
+		};
 		return tilesInDistance;
 	};
 	
 	// New method
 	Game_Map.prototype.hollowFilter = function(tiles) { //Find all tiles that are at the edge of tiles.
 		const tilesAtEdge = [];
-		for (var t = 0; t < tiles.length; t++) {
+		for(var t = 0; t < tiles.length; t++) {
 			var n = false;
 			var e = false;
 			var s = false;
@@ -2063,40 +1746,40 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			var se = false;
 			var sw = false;
 			var nw = false;
-			for (var i = 0; i < tiles.length; i++) {
-				if (tiles[t].x == tiles[i].x) {
-					if (tiles[t].y == tiles[i].y + 1) {
+			for(var i = 0; i < tiles.length; i++) {
+				if(tiles[t].x == tiles[i].x) {
+					if(tiles[t].y == tiles[i].y + 1) {
 						n = true;
-					} else if (tiles[t].y == tiles[i].y - 1) {
+					} else if(tiles[t].y == tiles[i].y - 1) {
 						s = true;
-					}
-				}
-				if (tiles[t].y == tiles[i].y) {
-					if (tiles[t].x == tiles[i].x + 1) {
+					};
+				};
+				if(tiles[t].y == tiles[i].y) {
+					if(tiles[t].x == tiles[i].x + 1) {
 						w = true;
-					} else if (tiles[t].x == tiles[i].x - 1) {
+					} else if(tiles[t].x == tiles[i].x - 1) {
 						e = true;
-					}
-				}
-				if (tiles[t].y == tiles[i].y + 1) { //Tile to the north.
-					if (tiles[t].x == tiles[i].x + 1) {
+					};
+				};
+				if(tiles[t].y == tiles[i].y + 1) { //Tile to the north.
+					if(tiles[t].x == tiles[i].x + 1) {
 						nw = true;
-					} else if (tiles[t].x == tiles[i].x - 1) {
+					} else if(tiles[t].x == tiles[i].x - 1) {
 						ne = true;
-					}
-				}
-				if (tiles[t].y == tiles[i].y - 1) { //Tile to the south.
-					if (tiles[t].x == tiles[i].x + 1) {
+					};
+				};
+				if(tiles[t].y == tiles[i].y - 1) { //Tile to the south.
+					if(tiles[t].x == tiles[i].x + 1) {
 						sw = true;
-					} else if (tiles[t].x == tiles[i].x - 1) {
+					} else if(tiles[t].x == tiles[i].x - 1) {
 						se = true;
-					}
-				}
-			}
-			if (!n || !e || !s || !w || !ne || !se || !sw || !nw) {
+					};
+				};
+			};
+			if(!n || !e || !s || !w || !ne || !se || !sw || !nw) {
 				tilesAtEdge.push(tiles[t]);
-			}
-		}
+			};
+		};
 		return tilesAtEdge;
 	};
 
@@ -2104,9 +1787,9 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	Game_Map.prototype.isTileMatch = function(tileId_1, tileId_2) {
 		const a1 = this.autotileTypeById(tileId_1);
 		const a2 = this.autotileTypeById(tileId_2);
-		if (((a1 == a2) && (a1 != -1)) || tileId_1 == tileId_2) {
+		if(((a1 == a2) && (a1 != -1)) || tileId_1 == tileId_2) {
 			return true;
-		}
+		};
 		return false;
 	};
 

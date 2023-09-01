@@ -1,4 +1,9 @@
-# Tyruswoo Tile Control for RPG Maker MZ
+## WARNING: This is an older version!
+It lacks the features and improvements of this plugin's later versions.
+To get the latest version for free, visit
+[Tyruswoo.com](https://www.tyruswoo.com).
+
+# Tyruswoo Tile Control v2.0 for RPG Maker MZ
 
 Change tiles dynamically during gameplay!
 
@@ -86,6 +91,7 @@ Tile Info on OK Press        True: Output tile info to console window when
 ```
 
 ## Script calls (Advanced)
+
 ```
 $gameMap.tileCodeAt(x,y,z)
     Returns the "Tx,y" ("Letter X comma Y" or "Tab X comma Y") tile code
@@ -103,26 +109,6 @@ $gameMap.tileCodeAt(x,y,z)
 
 $gameMap.tileCode(x,y,z)
     Same as $gameMap.tileCodeAt(x,y,z).
-
-$gameMap.tileMatch(tileIdList, x, y, z)
-$gameMap.tileIdInList(tileIdList, x, y, z)
-$gameMap.autotileInList(autotileList, x, y, z)
-$gameMap.tileIdInListAhead(tileIdList, distance, z)
-$gameMap.tileAhead(tileIdList, distance, z)
-$gameMap.autotileInListAhead(autotileList, distance, z)
-$gameMap.autotileAhead(autotileList, distance, z)
-    These script calls return true if the tile at the location matches one
-    in the list; false otherwise. They're useful for conditional branches.
-    - tileIdList and autotileList are arrays that can
-      contain numbers or tile codes (as strings).
-    - tileAhead and autotileAhead looks in the direction the player is facing,
-      and finds whichever tile is located there at the z level indicated.
-    - $gameMap.tileIdInListAhead() is the same as $gameMap.tileAhead().
-    - Likwise, $gameMap.autotileInListAhead() is the same as
-      $gameMap.autotileAhead().
-    Example use case: When the player is pushing an event, you can look
-    at the tile(s) 2 steps ahead of the player's current location, to
-    determine what happens when the player tries to push the event.
 ```
 
 ## Basics of how to use this plugin
@@ -367,19 +353,7 @@ v2.0  11/8/2021
 - Fixed bug that kept the map from loading properly in some projects.
   Thanks to Cris Litvin for reporting it and helping us debug!
 
-v3.0  3/10/2023
-- Link Map allows events to change distant maps' tiles.
-- Added the following tile-checking script calls:
-    - `$gameMap.tileIdInList(tileIdList, x, y, z)`
-    - `$gameMap.tileIdInListAhead(tileIdList, distance, z)`
-    - `$gameMap.tileAhead(tileIdList, distance, z)`
-    - `$gameMap.autotileInList(autotileList, x, y, z)`
-    - `$gameMap.autotileInListAhead(autotileList, distance, z)`
-    - `$gameMap.autotileAhead(autotileList, distance, z)`
-- Fixed bug where tile changes were lost if the player opened the
-  field menu mid-event.
-
-**v3.0.1** - 8/30/2023
+**v2.0.1** - 9/1/2023
 - This plugin is now free and open source under the [MIT license](https://opensource.org/license/mit/).
 
 > **Remember, only you can build your dreams!**
