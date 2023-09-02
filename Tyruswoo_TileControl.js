@@ -36,16 +36,16 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc v2.0.1 Change tiles dynamically during gameplay!
- * @author Tyruswoo and McKathlin
+ * @plugindesc v1.1.1 Change tiles dynamically during gameplay!
+ * @author Tyruswoo & McKathlin
  * @url https://www.tyruswoo.com
  *
  * @help Tyruswoo Tile Control for RPG Maker MZ
- *  
+ * 
  * WARNING: This is an older plugin! It lacks features and improvements
  * present in the latest version. You can get the latest version for free
  * on Tyruswoo.com.
- * 
+ *
  * ============================================================================
  * Plugin commands, their arguments, and short explanations:
  *
@@ -113,7 +113,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * Change Animation Frames         During game, change tile animation speed.
  *  - Tile Animation Frames        Frames for tile animations. Lower is faster.
  * ============================================================================
- * Plugin parameters, their arguments, and short explanations:
+ * Plugin parameters:
  *
  * Tile Animation Frames        Frames for tile animations of animated tiles.
  *                              Lower is faster. Higher is slower. Default: 30.
@@ -183,23 +183,11 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *                 B2,1 for a pyramid.
  *               - You can use tile code B0,0 to erase any tile.
  *              
- *              The Tx,y tile ID code assumes that you have a full tileset in
- *              Tab A. This includes A1, A2, A3, A4, and A5. If a plugin
- *              command calls for a Tile ID belonging to an absent tile sheet,
- *              the console will log a warning, and the tile will not be placed.
- *              If you do not have a full tileset in Tab A, refer to the table
- *              below for the first Y value of each A tilesheet:
- *              
- *              Tilesheet | First Y value (top of its sheet)
- *              ----------+----------------------------------
- *                     A1 |  0
- *                     A2 |  2
- *                     A3 |  6
- *                     A4 | 10
- *                     A5 | 16
- *
- *              Tabs B, C, D, and E (if present) have a single tilesheet each,
- *              so finding their x,y coordinates is straightforward.
+ *              Caution! The Tx,y tile ID code assumes that you have a full
+ *              tileset in Tab A! This includes A1, A2, A3, A4, and A5. If you
+ *              do not have a full tileset in Tab A, what appears to be the
+ *              correct tile code may be incorrect! This can result in a crash
+ *              of the game.
  *
  *    Tn        Where T is the tab, and n is the number of the tile when
  *              counting tiles from left to right, starting with zero. Also
@@ -215,16 +203,11 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *                 B10 for a pyramid.
  *               - You can use tile code B0 to erase any tile.
  *
- *              The Tn tile ID code assumes that you have a full
- *              tileset in Tab A. This includes A1, A2, A3, A4, and A5. If you
- *              do not have a full tileset in Tab A, refer to the tile code
- *              cheat sheet below:
- * 
- *              1st code of A1:   0
- *              1st code of A2:  16
- *              1st code of A3:  48
- *              1st code of A4:  80
- *              1st code of A5: 128
+ *              Caution! The Tn tile ID code assumes that you have a full
+ *              tileset in Tab A! This includes A1, A2, A3, A4, and A5. If you
+ *              do not have a full tileset in Tab A, what appears to be the
+ *              correct tile code may be incorrect! This can result in a crash
+ *              of the game.
  *
  *    Exact     For this tile code, you must enter the exact tile ID number
  *              used in RPG Maker's inner code.
@@ -362,16 +345,9 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *        - Updates Tile Control to work with Tyruswoo_FollowerControl v1.3 and
  *          higher.
  *        - Cleaned up the code so that repetitions are handled more concisely.
+ * ============================================================================
  * 
- * v2.0  11/8/2021
- *        - Fixed bug that was keeping A5 tiles from being placed properly
- *          when written in the form Ax,y
- *        - Fixed crash on plugin command calling for a Tile ID from an absent
- *          tile sheet. Now a warning is logged instead.
- *        - Fixed bug that kept the map from loading properly in some projects.
- *          Thanks to Cris Litvin for reporting it and helping us debug!
- * 
- * v2.0.1  9/1/2023
+ * v1.1.1  9/1/2023
  *        - This plugin is now free and open source under the MIT license.
  * 
  * ============================================================================
@@ -474,6 +450,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * @default 30
  * @text Tile Animation Frames
  * @desc Higher for slower tile animation. Lower for faster tile animation. Zero makes animated tiles vanish. Default: 30.
+ *
  */
  
 /*~struct~coordinates:
@@ -804,70 +781,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	const defaultCreepTileIdsFilter = null;
 	const defaultCreepTileIdZFilter = {"z0":"Recognize","z1":"Recognize","z2":"Recognize","z3":"Recognize"};;
 	const defaultCreepAreaFilter = null;
-
-	const TILE_SELECTOR_ROW_SIZE = 8;
-	const TILES_PER_A_SHEET = [ 0, 16, 32, 32, 48, 128 ];
-	const FIRST_A_CODE_NUMBER = [ 0, 0, 16, 48, 80, 128 ];
-	const TILE_SHEET_INDEXES_BY_NAME = {
-		A1: 0, A2: 1, A3: 2, A4: 3, A5: 4, B: 5, C: 6, D: 7, E: 8
-	};
 	
 	//=============================================================================
 	// Tile Control Functions
 	//=============================================================================
-
-	Tyruswoo.TileControl.tileIdExists = function(tilesetId, tileId) {
-		const tileSheetName = this.getTileSheetNameOfTileId(tileId);
-		return this.tileSheetExists(tilesetId, tileSheetName);
-	};
-
-	Tyruswoo.TileControl.getSheetNumberOfCode = function(codeNumber) {
-		for (var i = 1; i < 5; i++) {
-			if (codeNumber < FIRST_A_CODE_NUMBER[i+1]) {
-				return i;
-			}
-		}
-		// It's on or after the first A5 tile.
-		return 5;
-	};
-
-	Tyruswoo.TileControl.tileSheetExists = function(tilesetId, tileSheetName) {
-		const sheetIndex = TILE_SHEET_INDEXES_BY_NAME[tileSheetName];
-		if (undefined === sheetIndex) {
-			return false;
-		}
-		const tileset = $dataTilesets[tilesetId];
-		const sheetName = tileset.tilesetNames[sheetIndex];
-		return !!sheetName && sheetName.length > 0;
-	};
-
-	Tyruswoo.TileControl.getTileSheetNameOfTileId = function(tileId) {
-		if (tileId < Tilemap.TILE_ID_B) {
-			console.warn("Unexpected negative tile ID: " + tileId);
-			return "?";
-		} else if (tileId < Tilemap.TILE_ID_C) {
-			return "B";
-		} else if (tileId < Tilemap.TILE_ID_D) {
-			return "C";
-		} else if (tileId < Tilemap.TILE_ID_E) {
-			return "D";
-		} else if (tileId < Tilemap.TILE_ID_A5) {
-			return "E";
-		} else if (Tilemap.isTileA1(tileId)) {
-			return "A1";
-		} else if (Tilemap.isTileA2(tileId)) {
-			return "A2";
-		} else if (Tilemap.isTileA3(tileId)) {
-			return "A3";
-		} else if (Tilemap.isTileA4(tileId)) {
-			return "A4";
-		} else if (Tilemap.isTileA5(tileId)) {
-			return "A5";
-		} else {
-			console.warn("Unexpected tile ID: " + tileId);
-			return "?";
-		}
-	};
 
 	// New method
 	// This method takes a tileId as input, and returns the tileCode.
@@ -903,6 +820,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		return tileCode;
 	};
 	
+	// New method
 	// With input of args from Tile Control plugin command, outputs an array [x, y, z], with accounting for relativity options.
 	Tyruswoo.TileControl.extract_xyz_array = function(args) {
 		const coordinates = args.coordinates ? JSON.parse(args.coordinates) : defaultCoordinates;
@@ -943,6 +861,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		return [x, y, z];
 	};
 	
+	// New method.
 	Tyruswoo.TileControl.orientationalShift = function(direction, f = 0, r = 0) { //direction, forward shift, and rightward shift.
 		var xShift = 0;
 		var yShift = 0;
@@ -1087,15 +1006,14 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		this.animationCount++;
 		this.animationFrame = Math.floor(this.animationCount / Tyruswoo.TileControl._tileAnimationFrames); //Use animation frames as set by user.
 		for (const child of this.children) {
-			// Thanks to Cris Litvin for helping us find and fix the bug on the line below!
-			if (child && child.update) {
+			if (child.update) {
 				child.update();
 			}
 		}
-		if ($gameMap._needsTilemapRefresh) { //If a tile is set, then the tilemap needs to refresh.
+		if($gameMap._needsTilemapRefresh == true) { //If a tile is set, then the tilemap needs to refresh.
 			$gameMap._needsTilemapRefresh = false;
 			this.refresh();
-		}
+		};
 	};
 
 	//=============================================================================
@@ -1263,31 +1181,35 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			if(arg.charAt(2) && arg.charAt(2) == ',') {
 				codeX = parseInt(arg.charAt(1));
 				codeY = parseInt(arg.substr(3));
-				codeNumber = (codeY * TILE_SELECTOR_ROW_SIZE) + codeX;
 			} else {
 				codeNumber = parseInt(arg.substr(1));
 			};
 		};
 		switch(codeLetter) {
 			case 'a':
-				let sheetNumber = Tyruswoo.TileControl.getSheetNumberOfCode(codeNumber);
-				if (sheetNumber < 5) { // A1 through A4
-					tileId = Tilemap.TILE_ID_A1 + codeNumber * 48;
-				} else { // A5 tiles
-					tileId = Tilemap.TILE_ID_A5 + codeNumber - 128;
+				if(codeNumber <= 127) { //A1, A2, A3, and A4 autotiles.
+					tileId += Tilemap.TILE_ID_A1;
+					tileId += (codeNumber >= 0) ? codeNumber * 48 : (codeY * 8 + codeX) * 48;
+				} else { //A5 tiles.
+					tileId += Tilemap.TILE_ID_A5;
+					tileId += (codeNumber >= 0) ? codeNumber - 128 : (codeY - 16) * 8 + codeX;
 				};
 				break;
 			case 'b':
-				tileId = Tilemap.TILE_ID_B + codeNumber;
+				tileId += Tilemap.TILE_ID_B;
+				tileId += (codeNumber >= 0) ? codeNumber : codeY * 8 + codeX;
 				break;
 			case 'c':
-				tileId = Tilemap.TILE_ID_C + codeNumber;
+				tileId += Tilemap.TILE_ID_C;
+				tileId += (codeNumber >= 0) ? codeNumber : codeY * 8 + codeX;
 				break;
 			case 'd':
-				tileId = Tilemap.TILE_ID_D + codeNumber;
+				tileId += Tilemap.TILE_ID_D;
+				tileId += (codeNumber >= 0) ? codeNumber : codeY * 8 + codeX;
 				break;
 			case 'e':
-				tileId = Tilemap.TILE_ID_E + codeNumber;
+				tileId += Tilemap.TILE_ID_E;
+				tileId += (codeNumber >= 0) ? codeNumber : codeY * 8 + codeX;
 				break;
 			default:
 				tileId = arg;
@@ -1302,12 +1224,6 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 	// New method
 	Game_Map.prototype.setExactTileId = function(x, y, z, tileId) {
-		if (!Tyruswoo.TileControl.tileIdExists(this._tilesetId, tileId)) {
-			const tileSheetName = Tyruswoo.TileControl.getTileSheetNameOfTileId(tileId);
-			console.warn("Tile ID %1 is on Sheet %2, which does not exist in Tileset %3.\nTile was not placed.".format(
-			tileId, tileSheetName, this._tilesetId));
-			return;
-		}
 		const index = (z * $dataMap.height + y) * $dataMap.width + x;
 		$dataMap.data[index] = tileId;
 		this._tileChanges[index] = tileId;
