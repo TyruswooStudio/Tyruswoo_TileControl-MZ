@@ -36,9 +36,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc v1.1.1 Change tiles dynamically during gameplay!
+ * @plugindesc v1.0.1 Change tiles dynamically during gameplay!
  * @author Tyruswoo & McKathlin
  * @url https://www.tyruswoo.com
+ * @check Tyruswoo_FollowerControl
  *
  * @help Tyruswoo Tile Control for RPG Maker MZ
  * 
@@ -338,16 +339,8 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *
  * v1.0  8/30/2020
  *        - Tile Control released for RPG Maker MZ!
- *
- * v1.1  9/12/2020
- *        - Fixed interpretation of boolean parameters and command arguments in
- *          some instances.
- *        - Updates Tile Control to work with Tyruswoo_FollowerControl v1.3 and
- *          higher.
- *        - Cleaned up the code so that repetitions are handled more concisely.
- * ============================================================================
  * 
- * v1.1.1  9/1/2023
+ * v1.0.1  9/1/2023
  *        - This plugin is now free and open source under the MIT license.
  * 
  * ============================================================================
@@ -409,7 +402,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *
  * @arg relativity
  * @type struct<relativity>
- * @default {"mode":"Relative to Event","eventId":"","party_member":"","orientational_shift":"","allowAutotiling":"true","clearUpperLayers":"true"}
+ * @default {"mode":"Relative to Event","eventId":"","party_member":"","allowAutotiling":"true","clearUpperLayers":"true"}
  * @text Relativity & Options
  * @desc Coordinates may be interpreted as absolute, or relative to an event or the player. Also, special options available.
  *
@@ -431,7 +424,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *
  * @arg relativity
  * @type struct<relativity>
- * @default {"mode":"Relative to Event","eventId":"","party_member":"","orientational_shift":"","allowAutotiling":"true","clearUpperLayers":"true"}
+ * @default {"mode":"Relative to Event","eventId":"","party_member":"","allowAutotiling":"true","clearUpperLayers":"true"}
  * @text Relativity & Options
  * @desc Coordinates may be interpreted as absolute, or relative to an event or the player. Also, special options available.
  *
@@ -756,7 +749,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 	// User-Defined Plugin Parameters
 	Tyruswoo.TileControl.param.tileAnimationFrames = Number(Tyruswoo.TileControl.parameters['Tile Animation Frames']);
-	Tyruswoo.TileControl.param.tileInfoOnOkPress = (Tyruswoo.TileControl.parameters['Tile Info on OK Press'] == "true") ? true : false;
+	Tyruswoo.TileControl.param.tileInfoOnOkPress = Boolean(Tyruswoo.TileControl.parameters['Tile Info on OK Press']);
 	Tyruswoo.TileControl.param.commonEventOnOkPress = Number(Tyruswoo.TileControl.parameters['Common Event on OK Press']);
 
 	// Variables
@@ -828,62 +821,104 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		const orientational_shift = relativity.orientational_shift ? JSON.parse(relativity.orientational_shift) : defaultOrientationalShift;
 		var x = Number(coordinates.x);
 		var y = Number(coordinates.y);
-		const z = Number(coordinates.z);
+		var z = Number(coordinates.z);
 		if(relativity.mode == "Relative to Event") {
-			const eventId = Number(relativity.eventId) ? Number(relativity.eventId) : Tyruswoo.TileControl._pluginCommandEventId;
+			var eventId = Number(relativity.eventId);
+			if(!eventId) {
+				eventId = Tyruswoo.TileControl._pluginCommandEventId;
+			};
 			const e = $gameMap.event(eventId);
 			if(e) {
-				const f = Number(orientational_shift.forward_shift) ? Number(orientational_shift.forward_shift) : 0;
-				const r = Number(orientational_shift.rightward_shift) ? Number(orientational_shift.rightward_shift) : 0;
-				const xy_shift = Tyruswoo.TileControl.orientationalShift(e.direction(), f, r);
-				x = x + e.x + xy_shift[0];
-				y = y + e.y + xy_shift[1];
+				x += e.x;
+				y += e.y;
+				var f = Number(orientational_shift.forward_shift);
+				if(!f) {f = 0};
+				var r = Number(orientational_shift.rightward_shift);
+				if(!r) {r = 0};
+				switch(e.direction()) {
+					case 2:
+						x -= r;
+						y += f;
+						break;
+					case 4:
+						x -= f;
+						y -= r;
+						break;
+					case 6:
+						x += f;
+						y += r;
+						break;
+					case 8:
+						x += r;
+						y -= f;
+						break;
+				};
 			};
 		} else if(relativity.mode == "Relative to Player") {
 			var p = $gamePlayer; //By default, the party leader is selected.
 			if(Imported.Tyruswoo_FollowerControl) { //However, if Tyruswoo_FollowerControl is installed, then the currently selected follower is automatically selected.
-				p = Tyruswoo.FollowerControl.follower();
+				p = Tyruswoo.FollowerControl._follower ? Tyruswoo.FollowerControl._follower : $gamePlayer;
 			};
-			if(relativity.party_member == "Leader") {
-				p = $gamePlayer; //Regardless of whether Tyruswoo_FollowerControl is installed, the "Leader" option can be used to select the leader.
-			} else if(relativity.party_member.substr(0, 8) == "Follower") {
-				const n = Number(relativity.party_member.substr(9)); //Get the number at the end of this string.
-				p = $gamePlayer.followers().follower(n - 1);
+			switch(relativity.party_member) {
+				case "Leader":
+					p = $gamePlayer; //Regardless of whether Tyruswoo_FollowerControl is installed, the "Leader" option can be used to select the leader.
+					break;
+				case "Follower 1":
+					p = $gamePlayer.followers().follower(0);
+					break;
+				case "Follower 2":
+					p = $gamePlayer.followers().follower(1);
+					break;
+				case "Follower 3":
+					p = $gamePlayer.followers().follower(2);
+					break;
+				case "Follower 4":
+					p = $gamePlayer.followers().follower(3);
+					break;
+				case "Follower 5":
+					p = $gamePlayer.followers().follower(4);
+					break;
+				case "Follower 6":
+					p = $gamePlayer.followers().follower(5);
+					break;
+				case "Follower 7":
+					p = $gamePlayer.followers().follower(6);
+					break;
+				case "Follower 8":
+					p = $gamePlayer.followers().follower(7);
+					break;
+				case "Follower 9":
+					p = $gamePlayer.followers().follower(8);
+					break;
 			};
 			if(p) {
-				const f = Number(orientational_shift.forward_shift) ? Number(orientational_shift.forward_shift) : 0;
-				const r = Number(orientational_shift.rightward_shift) ? Number(orientational_shift.rightward_shift) : 0;
-				const xy_shift = Tyruswoo.TileControl.orientationalShift(p.direction(), f, r);
-				x = x + p.x + xy_shift[0];
-				y = y + p.y + xy_shift[1];
+				x += p.x;
+				y += p.y;
+				var f = Number(orientational_shift.forward_shift);
+				if(!f) {f = 0};
+				var r = Number(orientational_shift.rightward_shift);
+				if(!r) {r = 0};
+				switch(p.direction()) {
+					case 2:
+						x -= r;
+						y += f;
+						break;
+					case 4:
+						x -= f;
+						y -= r;
+						break;
+					case 6:
+						x += f;
+						y += r;
+						break;
+					case 8:
+						x += r;
+						y -= f;
+						break;
+				};
 			};
 		};
 		return [x, y, z];
-	};
-	
-	// New method.
-	Tyruswoo.TileControl.orientationalShift = function(direction, f = 0, r = 0) { //direction, forward shift, and rightward shift.
-		var xShift = 0;
-		var yShift = 0;
-		switch(direction) {
-			case 2:
-				xShift -= r;
-				yShift += f;
-				break;
-			case 4:
-				xShift -= f;
-				yShift -= r;
-				break;
-			case 6:
-				xShift += f;
-				yShift += r;
-				break;
-			case 8:
-				xShift += r;
-				yShift -= f;
-				break;
-		};
-		return [xShift, yShift];
 	};
 
 	//=============================================================================
@@ -1141,11 +1176,11 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			return false;
 		};
 		tileId = this.readTileCode(tileId);
-		if(typeof clearUpperLayers != 'boolean') {
-			clearUpperLayers = (clearUpperLayers == 'true') ? true : false;
+		if(clearUpperLayers == "false") {
+			clearUpperLayers = false;
 		};
-		if(typeof allowAutotiling != 'boolean') {
-			allowAutotiling = (allowAutotiling == 'true') ? true : false;
+		if(allowAutotiling == "false") {
+			allowAutotiling = false;
 		};
 		if(clearUpperLayers) {
 			for (var zz = z + 1; zz < 4; zz++) {
@@ -1376,7 +1411,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 	// New method
 	Game_Map.prototype.fillTiles = function(x = 0, y = 0, z = 0, tileId = 0, clearUpperLayers = true, allowAutotiling = true, regions = [], tileIds_filter = [], tileIds_z_filter = [], area_filter, distance, hollow = false,
-		origin, creepDistance = 0, creepTileId = null, creepZ = null, creepClearUpperLayers = true, creepAllowAutotiling = true,
+		origin, creepDistance = 0, creepTileId = 0, creepZ = 0, creepClearUpperLayers = true, creepAllowAutotiling = true,
 		creepRegions = [], creepTileIds_filter = [], creepTileIds_z_filter = [], creepArea_filter, creepHollow = false) {
 		x = Math.round(x);
 		y = Math.round(y);
@@ -1387,16 +1422,8 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			return false;
 		};
 		tileId = this.readTileCode(tileId);
-		if(typeof clearUpperLayers != 'boolean') {
-			clearUpperLayers = (clearUpperLayers == "true") ? true : false;
-		};
-		if(typeof allowAutotiling != 'boolean') {
-			allowAutotiling = (allowAutotiling == "true") ? true : false;
-		};
-		if(typeof hollow != 'boolean') {
-			hollow = (hollow == "true") ? true : false;
-		};
-		creepDistance = Number(creepDistance);
+		if(clearUpperLayers == "false") {clearUpperLayers = false;};
+		if(allowAutotiling == "false") {allowAutotiling = false;};
 		var tiles = [];
 		for(var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map.
 			for(var xx = 0; xx < width; xx++) {
@@ -1435,7 +1462,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			};
 			tiles = tilesInDistance;
 		};
-		if(hollow) { //Hollow filter.
+		if(hollow && Boolean(hollow)) { //Hollow filter.
 			const tilesAtEdge = this.hollowFilter(tiles);
 			tiles = tilesAtEdge;
 		};
@@ -1465,18 +1492,11 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 				this.setTileId(tiles[t].x, tiles[t].y, z, tileId, clearUpperLayers, allowAutotiling);
 			};
 		};
-		if(creepDistance) { //Creep
-			if(creepTileId != null && creepTileId != "") {creepTileId = this.readTileCode(creepTileId);} else {creepTileId = tileId;};
-			if(creepZ != null && creepZ != "") {creepZ = Math.round(creepZ);} else {creepZ = z;};
-			if(typeof creepClearUpperLayers != 'boolean') {
-				creepClearUpperLayers = (creepClearUpperLayers == "true") ? true : false;
-			};
-			if(typeof creepAllowAutotiling != 'boolean') {
-				creepAllowAutotiling = (creepAllowAutotiling == "true") ? true : false;
-			};
-			if(typeof creepHollow != 'boolean') {
-				creepHollow = (creepHollow == "true") ? true : false;
-			};
+		if(creepDistance && Number(creepDistance)) { //Creep
+			if(creepTileId) {creepTileId = this.readTileCode(creepTileId);} else {creepTileId = tileId;};
+			if(creepZ) {creepZ = Math.round(creepZ);} else {creepZ = z;};
+			if(creepClearUpperLayers == "false") {creepClearUpperLayers = false;};
+			if(creepAllowAutotiling == "false") {creepAllowAutotiling = false;};
 			var creepTiles = [];
 			for(var yy = 0; yy < height; yy++) { //Find all tile locations (x and y coordinates) on the current map, as long as locations are not in the Fill space.
 				for(var xx = 0; xx < width; xx++) {
@@ -1511,7 +1531,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 				};
 				creepTiles = creepTilesInArea;
 			};
-			if(creepDistance) { //Creep Distance (adjacent) filter.
+			if(creepDistance && Number(creepDistance)) { //Creep Distance (adjacent) filter.
 				const excludeOrigin = true;
 				const creepTilesInDistance = this.distanceFilter(creepTiles.concat(tiles), creepDistance, tiles, excludeOrigin); //Find all creepTiles that are creepDistance away from any of the Fill tiles.
 				if(!creepTilesInDistance.length && creepTiles.length) {
@@ -1519,11 +1539,11 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 				};
 				creepTiles = creepTilesInDistance;
 			};
-			if(creepHollow) { //Creep Hollow filter.
+			if(creepHollow && Boolean(creepHollow)) { //Creep Hollow filter.
 				const creepTilesAtEdge = this.hollowFilter(creepTiles);
 				creepTiles = creepTilesAtEdge;
 			};
-			if(creepTileId !== null) { //If there is a creepTildId, then apply creep.
+			if(creepTileId) { //If there is a creepTildId, then apply creep.
 				for(var t = 0; t < creepTiles.length; t++) {
 					this.setTileId(creepTiles[t].x, creepTiles[t].y, creepZ, creepTileId, creepClearUpperLayers, creepAllowAutotiling);
 				};

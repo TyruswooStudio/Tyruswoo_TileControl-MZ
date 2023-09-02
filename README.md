@@ -3,7 +3,7 @@ It lacks the features and improvements of this plugin's later versions.
 To get the latest version for free, visit
 [Tyruswoo.com](https://www.tyruswoo.com).
 
-# Tyruswoo Tile Control v1.1.1 for RPG Maker MZ
+# Tyruswoo Tile Control v1.0.1 for RPG Maker MZ
 
 Change tiles dynamically during gameplay!
 
@@ -338,14 +338,7 @@ of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, or f).
 **v1.0** - 8/30/2020
 - Tile Control released for RPG Maker MZ!
 
-**v1.1** - 9/12/2020
-- Fixed interpretation of boolean parameters and command arguments in
-  some instances.
-- Updates Tile Control to work with `Tyruswoo_FollowerControl` v1.3 and
-  higher.
-- Cleaned up the code so that repetitions are handled more concisely.
-
-**v1.1.1** - 9/1/2023
+**v1.0.1** - 9/1/2023
 - This older plugin version is now free and open source under the [MIT license](https://opensource.org/license/mit/).
 
 > **Remember, only you can build your dreams!**
