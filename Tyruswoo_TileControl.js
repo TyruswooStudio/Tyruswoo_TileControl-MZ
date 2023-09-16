@@ -36,7 +36,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc v2.0.1 Change tiles dynamically during gameplay!
+ * @plugindesc MZ v2.0.1 Change tiles dynamically during gameplay!
  * @author Tyruswoo and McKathlin
  * @url https://www.tyruswoo.com
  *
