@@ -379,8 +379,15 @@ v3.0  3/10/2023
 - Fixed bug where tile changes were lost if the player opened the
   field menu mid-event.
 
-**v3.0.1** - 8/30/2023
+v3.0.1 8/30/2023
 - This plugin is now free and open source under the [MIT license](https://opensource.org/license/mit/).
+
+v_.\_.\_  \_\_/\_\_/____
+- Bridges! Choose a terrain tag for bridge tiles, and place bridge
+tiles on the map to easily make a bridge that characters can walk
+over or under depending on each character's current elevation!
+- Tile Info logs to the console with improved readability when in
+dark mode.
 
 > **Remember, only you can build your dreams!**
 > 
