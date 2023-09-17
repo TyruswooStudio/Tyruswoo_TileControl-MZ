@@ -36,7 +36,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc MZ v3.0.1 Change tiles dynamically during gameplay!
+ * @plugindesc MZ v_._._ Change tiles dynamically during gameplay!
  * @author Tyruswoo and McKathlin
  * @url https://www.tyruswoo.com
  *
@@ -398,6 +398,13 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * v3.0.1  8/30/2023
  *        - This plugin is now free and open source under the MIT license.
  *
+ * v_._._  __/__/____
+ *        - Bridges! Choose a terrain tag for bridge tiles, and place bridge
+ *          tiles on the map to easily make a bridge that characters can walk
+ *          over or under depending on each character's current elevation!
+ *        - Tile Info logs to the console with improved readability when in
+ *          dark mode.
+ *
  * ============================================================================
  * MIT License
  *
@@ -439,6 +446,12 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * @default true
  * @desc When true, the playtester can hold Ctrl then press the OK (confirm) button to output a tile's ID info to the console.
  *
+ * @param Bridge Terrain Tag
+ * @type number
+ * @min 0
+ * @max 7
+ * @desc Terrain Tag of bridge tiles. Default: 0 (no bridge tiles).
+ * 
  * @command set_tile
  * @text Set Tile
  * @desc Set a tile by tileId and coordinates. (To find tileId, playtest with "Tile Info on OK Press." See tileId in console with F12.)
@@ -819,7 +832,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	Tyruswoo.TileControl.param.tileAnimationFrames = Number(Tyruswoo.TileControl.parameters['Tile Animation Frames']);
 	Tyruswoo.TileControl.param.tileInfoOnOkPress = (Tyruswoo.TileControl.parameters['Tile Info on OK Press'] == "true") ? true : false;
 	Tyruswoo.TileControl.param.commonEventOnOkPress = Number(Tyruswoo.TileControl.parameters['Common Event on OK Press']);
-
+	Tyruswoo.TileControl.param.bridgeTerrainTag = Number(Tyruswoo.TileControl.parameters['Bridge Terrain Tag']);
 	// Variables
 	Tyruswoo.TileControl._tileAnimationFrames = Tyruswoo.TileControl.param.tileAnimationFrames;
 	Tyruswoo.TileControl._pluginCommandEventId = 0; //Keep track of the most recent event to run a plugin command.
@@ -1179,20 +1192,523 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// Updates the tilemap for each frame.
 	Tilemap.prototype.update = function() {
 		this.animationCount++;
-		// Use animation frames as set by user.
-		this.animationFrame = Math.floor(
-			this.animationCount / Tyruswoo.TileControl._tileAnimationFrames); 
+										 
+								   
+		this.animationFrame = Math.floor(this.animationCount / Tyruswoo.TileControl._tileAnimationFrames); // Use animation frames as set by user.
 		for (const child of this.children) {
-			// Thanks to Cris Litvin for helping us find and fix the bug on the line below!
-			if (child && child.update) {
+			if (child && child.update) { // Thanks to Cris Litvin for helping us find and fix the bug on this line!
+							   
 				child.update();
 			}
 		}
-		if ($gameMap._needsTilemapRefresh) {
-			// If a tile is set, then the tilemap needs to refresh.
+									  
+		if ($gameMap._needsTilemapRefresh) { // If a tile is set, then the tilemap needs to refresh.
 			$gameMap._needsTilemapRefresh = false;
 			this.refresh();
 		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Tilemap_createLayers = Tilemap.prototype._createLayers;
+	Tilemap.prototype._createLayers = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_createLayers.call(this); //Default method.
+		} else { //Bridges enabled.
+			/*
+			 * [Z coordinate defaults]
+			 *  0 : Lower tiles
+			 *  1 : Lower characters
+			 *  3 : Normal characters
+			 *  4 : Upper tiles
+			 *  5 : Upper characters
+			 *  6 : Airship shadow
+			 *  7 : Balloon
+			 *  8 : Animation
+			 *  9 : Destination
+			 *
+			 * [Z coordinates with Tyruswoo_TileControl bridges]
+			 *  0 : tileZ 0 Lower tiles
+			 *  1 : tileZ 0 Lower characters
+			 *  3 : tileZ 0 Normal characters
+			 *  4 : tileZ 0 Upper tiles
+			 *  5 : tileZ 0 Upper characters
+			 * 10 : tileZ 1 Lower tiles
+			 * 11 : tileZ 1 Lower characters
+			 * 13 : tileZ 1 Normal characters
+			 * 14 : tileZ 1 Upper tiles
+			 * 15 : tileZ 1 Upper characters
+			 * 20 : tileZ 2 Lower tiles
+			 * 21 : tileZ 2 Lower characters
+			 * 23 : tileZ 2 Normal characters
+			 * 24 : tileZ 2 Upper tiles
+			 * 25 : tileZ 2 Upper characters
+			 * 30 : tileZ 3 Lower tiles
+			 * 31 : tileZ 3 Lower characters
+			 * 33 : tileZ 3 Normal characters
+			 * 34 : tileZ 3 Upper tiles
+			 * 35 : tileZ 3 Upper characters
+			 * 60 : Airship shadow
+			 * 70 : Balloon
+			 * 80 : Animation
+			 * 90 : Destination
+			 */
+			this._lowerLayer = new Tilemap.Layer();
+			this._lowerLayer.z = 0;
+			this._upperLayer = new Tilemap.Layer();
+			this._upperLayer.z = 4;
+			this._lowerLayer1 = new Tilemap.Layer();
+			this._lowerLayer1.z = 10;
+			this._upperLayer1 = new Tilemap.Layer();
+			this._upperLayer1.z = 14;
+			this._lowerLayer2 = new Tilemap.Layer();
+			this._lowerLayer2.z = 20;
+			this._upperLayer2 = new Tilemap.Layer();
+			this._upperLayer2.z = 24;
+			this._lowerLayer3 = new Tilemap.Layer();
+			this._lowerLayer3.z = 30;
+			this._upperLayer3 = new Tilemap.Layer();
+			this._upperLayer3.z = 34;
+			this.addChild(this._lowerLayer);
+			this.addChild(this._upperLayer);
+			this.addChild(this._lowerLayer1);
+			this.addChild(this._upperLayer1);
+			this.addChild(this._lowerLayer2);
+			this.addChild(this._upperLayer2);
+			this.addChild(this._lowerLayer3);
+			this.addChild(this._upperLayer3);
+			this._needsRepaint = true;
+		}
+	};
+	
+	// Alias method
+	// Updates the transform on all children of this container for rendering.
+	Tyruswoo.TileControl.Tilemap_updateTransform = Tilemap.prototype.updateTransform;
+	Tilemap.prototype.updateTransform = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_updateTransform.call(this); //Default method.
+		} else { //Bridges enabled.
+			const ox = Math.ceil(this.origin.x);
+			const oy = Math.ceil(this.origin.y);
+			const startX = Math.floor((ox - this._margin) / this._tileWidth);
+			const startY = Math.floor((oy - this._margin) / this._tileHeight);
+			this._lowerLayer.x = startX * this._tileWidth - ox;
+			this._lowerLayer.y = startY * this._tileHeight - oy;
+			this._upperLayer.x = startX * this._tileWidth - ox;
+			this._upperLayer.y = startY * this._tileHeight - oy;
+			this._lowerLayer1.x = startX * this._tileWidth - ox;
+			this._lowerLayer1.y = startY * this._tileHeight - oy;
+			this._upperLayer1.x = startX * this._tileWidth - ox;
+			this._upperLayer1.y = startY * this._tileHeight - oy;
+			this._lowerLayer2.x = startX * this._tileWidth - ox;
+			this._lowerLayer2.y = startY * this._tileHeight - oy;
+			this._upperLayer2.x = startX * this._tileWidth - ox;
+			this._upperLayer2.y = startY * this._tileHeight - oy;
+			this._lowerLayer3.x = startX * this._tileWidth - ox;
+			this._lowerLayer3.y = startY * this._tileHeight - oy;
+			this._upperLayer3.x = startX * this._tileWidth - ox;
+			this._upperLayer3.y = startY * this._tileHeight - oy;
+			if (
+				this._needsRepaint ||
+				this._lastAnimationFrame !== this.animationFrame ||
+				this._lastStartX !== startX ||
+				this._lastStartY !== startY
+			) {
+				this._lastAnimationFrame = this.animationFrame;
+				this._lastStartX = startX;
+				this._lastStartY = startY;
+				this._addAllSpots(startX, startY);
+				this._needsRepaint = false;
+			}
+			this._sortChildren();
+			PIXI.Container.prototype.updateTransform.call(this);
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Tilemap_updateBitmaps = Tilemap.prototype._updateBitmaps;
+	Tilemap.prototype._updateBitmaps = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_updateBitmaps.call(this); //Default method.
+		} else { //Bridges enabled.
+			if (this._needsBitmapsUpdate && this.isReady()) {
+				this._lowerLayer.setBitmaps(this._bitmaps);
+				this._lowerLayer1.setBitmaps(this._bitmaps);
+				this._lowerLayer2.setBitmaps(this._bitmaps);
+				this._lowerLayer3.setBitmaps(this._bitmaps);
+				this._needsBitmapsUpdate = false;
+				this._needsRepaint = true;
+			}
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Tilemap_addAllSpots = Tilemap.prototype._addAllSpots;
+	Tilemap.prototype._addAllSpots = function(startX, startY) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_addAllSpots.call(this, startX, startY); //Default method.
+		} else { //Bridges enabled.
+			this._lowerLayer.clear();
+			this._upperLayer.clear();
+			this._lowerLayer1.clear();
+			this._upperLayer1.clear();
+			this._lowerLayer2.clear();
+			this._upperLayer2.clear();
+			this._lowerLayer3.clear();
+			this._upperLayer3.clear();
+			const widthWithMatgin = this.width + this._margin * 2;
+			const heightWithMatgin = this.height + this._margin * 2;
+			const tileCols = Math.ceil(widthWithMatgin / this._tileWidth) + 1;
+			const tileRows = Math.ceil(heightWithMatgin / this._tileHeight) + 1;
+			for (let y = 0; y < tileRows; y++) {
+				for (let x = 0; x < tileCols; x++) {
+					this._addSpot(startX, startY, x, y);
+				}
+			}
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Tilemap_addSpot = Tilemap.prototype._addSpot;
+	Tilemap.prototype._addSpot = function(startX, startY, x, y) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_addSpot.call(this, startX, startY, x, y); //Default method.
+		} else { //Bridges enabled.
+			const mx = startX + x;
+			const my = startY + y;
+			const dx = x * this._tileWidth;
+			const dy = y * this._tileHeight;
+			const tileId0 = this._readMapData(mx, my, 0);
+			const tileId1 = this._readMapData(mx, my, 1);
+			const tileId2 = this._readMapData(mx, my, 2);
+			const tileId3 = this._readMapData(mx, my, 3);
+			const shadowBits = this._readMapData(mx, my, 4);
+			const upperTileId1 = this._readMapData(mx, my - 1, 1);
+
+			this._addSpotTile(tileId0, dx, dy);
+			this._addSpotTile(tileId1, dx, dy, $gameMap.isBridgeTile(tileId1) ? 1 : 0); //Bridge tiles go on higher tileZ.
+			this._addShadow(this._lowerLayer, shadowBits, dx, dy);
+			if (this._isTableTile(upperTileId1) && !this._isTableTile(tileId1)) {
+				if (!Tilemap.isShadowingTile(tileId0)) {
+					this._addTableEdge(this._lowerLayer, upperTileId1, dx, dy);
+				}
+			}
+			if (this._isOverpassPosition(mx, my)) {
+				this._addTile(this._upperLayer, tileId2, dx, dy);
+				this._addTile(this._upperLayer, tileId3, dx, dy);
+			} else {
+				this._addSpotTile(tileId2, dx, dy, $gameMap.isBridgeTile(tileId2) ? 2 : 0); //Bridge tiles go on higher tileZ.
+				this._addSpotTile(tileId3, dx, dy, $gameMap.isBridgeTile(tileId3) ? 3 : 0); //Bridge tiles go on higher tileZ.
+			}
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Tilemap_addSpotTile = Tilemap.prototype._addSpotTile;
+	Tilemap.prototype._addSpotTile = function(tileId, dx, dy, tileZ = 0) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Tilemap_addSpotTile.call(this, tileId, dx, dy); //Default method.
+		} else { //Bridges enabled.
+			switch(tileZ) {
+				case 1:
+					if (this._isHigherTile(tileId)) {
+						this._addTile(this._upperLayer1, tileId, dx, dy);
+					} else {
+						this._addTile(this._lowerLayer1, tileId, dx, dy);
+					}
+					break;
+				case 2:
+					if (this._isHigherTile(tileId)) {
+						this._addTile(this._upperLayer2, tileId, dx, dy);
+					} else {
+						this._addTile(this._lowerLayer2, tileId, dx, dy);
+					}
+					break;
+				case 3:
+					if (this._isHigherTile(tileId)) {
+						this._addTile(this._upperLayer3, tileId, dx, dy);
+					} else {
+						this._addTile(this._lowerLayer3, tileId, dx, dy);
+					}
+					break;
+				default: //case 0
+					if (this._isHigherTile(tileId)) {
+						this._addTile(this._upperLayer, tileId, dx, dy);
+					} else {
+						this._addTile(this._lowerLayer, tileId, dx, dy);
+					}
+			}
+		}
+	};
+	
+	//=============================================================================
+	// Sprite_Animation
+	//=============================================================================
+	
+	// Alias method
+	Tyruswoo.TileControl.Sprite_Animation_initMembers = Sprite_Animation.prototype.initMembers;
+	Sprite_Animation.prototype.initMembers = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Sprite_Animation_initMembers.call(this); //Bridges not enabled. Default method.
+		Tyruswoo.TileControl.Sprite_Animation_initMembers.call(this); //Default method.
+		this.z = 80;
+	};
+	
+	//=============================================================================
+	// Sprite_AnimationMV
+	//=============================================================================
+
+	// Alias method
+	Tyruswoo.TileControl.Sprite_AnimationMV_initMembers = Sprite_AnimationMV.prototype.initMembers;
+	Sprite_AnimationMV.prototype.initMembers = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Sprite_AnimationMV_initMembers.call(this); //Bridges not enabled. Default method.
+		Tyruswoo.TileControl.Sprite_AnimationMV_initMembers.call(this); //Default method.
+		this.z = 80;
+	};
+	
+	//=============================================================================
+	// Sprite_Balloon
+	//=============================================================================
+
+	// Alias method
+	Tyruswoo.TileControl.Sprite_Balloon_initMembers = Sprite_Balloon.prototype.initMembers;
+	Sprite_Balloon.prototype.initMembers = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Sprite_Balloon_initMembers.call(this); //Bridges not enabled. Default method.
+		Tyruswoo.TileControl.Sprite_Balloon_initMembers.call(this); //Default method.
+		this.z = 70;
+	};
+	
+	//=============================================================================
+	// Spriteset_Map
+	//=============================================================================
+	
+	// Alias method
+	// Determines airship shadow sprite z coordinate.
+	Tyruswoo.TileControl.Spriteset_Map_createShadow = Spriteset_Map.prototype.createShadow;
+	Spriteset_Map.prototype.createShadow = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Spriteset_Map_createShadow.call(this); //Default method.
+		} else { //Bridges enabled.
+			this._shadowSprite = new Sprite();
+			this._shadowSprite.bitmap = ImageManager.loadSystem("Shadow1");
+			this._shadowSprite.anchor.x = 0.5;
+			this._shadowSprite.anchor.y = 1;
+			this._shadowSprite.z = 60; //Tyruswoo_TileControl airship shadow z coordinate.
+			this._tilemap.addChild(this._shadowSprite);
+		}
+	};
+
+	// Alias method
+	// Determines desination sprite z coordinate.
+	Tyruswoo.TileControl.Spriteset_Map_createDestination = Spriteset_Map.prototype.createDestination;
+	Spriteset_Map.prototype.createDestination = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Spriteset_Map_createDestination.call(this); //Default method.
+		} else { //Bridges enabled.
+			this._destinationSprite = new Sprite_Destination();
+			this._destinationSprite.z = 90; //Tyruswoo_TileControl desination z coordinate.
+			this._tilemap.addChild(this._destinationSprite);
+		}
+	};
+
+	//=============================================================================
+	// Game_CharacterBase
+	//=============================================================================
+
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_initMembers = Game_CharacterBase.prototype.initMembers;
+	Game_CharacterBase.prototype.initMembers = function() {
+		Tyruswoo.TileControl.Game_CharacterBase_initMembers.call(this);
+		this._tileZ = 0;     //_tileZ affects the character's movement on the map.
+		this._realTileZ = 0; //_realTileZ affects the character's appearance on the map.
+		this._tileZ2 = null; //Destination tileZ. Null for none. 0 for ground. 1, 2, or 3 for bridges at z level 1, 2, or 3.
+	};
+	
+	// New method
+	Game_CharacterBase.prototype.tileZ = function() {
+		if(this._tileZ === undefined) this._tileZ = 0;
+		return this._tileZ;
+	};
+	
+	// New method
+	Game_CharacterBase.prototype.realTileZ = function() {
+		if(this._realTileZ === undefined) this._realTileZ = 0;
+		return this._realTileZ;
+	};
+	
+	// New method
+	Game_CharacterBase.prototype.tileZ2 = function() {
+		if(this._tileZ2 === undefined) this._tileZ2 = null;
+		return this._tileZ2;
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_isMapPassable = Game_CharacterBase.prototype.isMapPassable;
+	Game_CharacterBase.prototype.isMapPassable = function(x, y, d, tileZ = null) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_CharacterBase_isMapPassable.call(this, x, y, d); //Bridges not enabled. Default method.
+		const b = $gameMap.bridgeAt(x, y);
+		const x2 = $gameMap.roundXWithDirection(x, d);
+		const y2 = $gameMap.roundYWithDirection(y, d);
+		const b2 = $gameMap.bridgeAt(x2, y2)
+		if(!b && !b2) {
+			if(Tyruswoo.TileControl.Game_CharacterBase_isMapPassable.call(this, x, y, d)) {
+				this._tileZ2 = 0;
+			} else {
+				this._tileZ2 = null;
+			}
+			return Tyruswoo.TileControl.Game_CharacterBase_isMapPassable.call(this, x, y, d); //No bridges here. Default method.
+		}
+		const d2 = this.reverseDir(d);
+		const a = tileZ !== null ? tileZ : this.tileZ();
+		const tiles = $gameMap.layeredTiles(x, y);
+		const tiles2 = $gameMap.layeredTiles(x2, y2);
+		const obt = a ? tiles[Math.abs(a-3)] : null; //Origin bridge tile, if any.
+		const obtp = obt && $gameMap.isPassableBridge(obt, d) ? true : false; //Origin bridge tile passable.
+		if(obt && !obtp) {
+			this._tileZ2 = null;
+			return false; //The character begins on a bridge, but it is not passable in this direction.
+		}
+		const nonBridgeTiles = $gameMap.nonBridgeTiles(tiles);
+		const nonBridgeTiles2 = $gameMap.nonBridgeTiles(tiles2);
+		const ogp = $gameMap.isPassableTiles(nonBridgeTiles, d); //Origin ground passable.
+		const dgp = $gameMap.isPassableTiles(nonBridgeTiles2, d2); //Destination ground passable.
+		const obp = $gameMap.firstPassableBridgeTileIndex(tiles, d) !== null ? true : false; //Check if there is any passable bridge at the origin location.
+		const dbt_index = $gameMap.firstPassableBridgeTileIndex(tiles2, d2); //Destination bridge tile index.
+		const dbt = dbt_index !== null ? tiles2[dbt_index] : null; //Destination bridge tile Id.
+		const a2 = dbt ? 3 - dbt_index : 0; //Altitude at goal destination.
+		/*
+		console.log("Origin bridge tile (obt):\t\t\t" + obt + "\tPassable? " + obtp
+					+ "\nDestination bridge tile (dbt):\t\t" + dbt
+					+ "\nOrigin ground passable (ogp):\t\t" + ogp
+					+ "\nDestination ground passable (dgp):\t" + dgp
+					+ "\nCurrent altitude: " + this._tileZ + ". Destination altitude: " + a2 + ".");
+		*/
+		if(obt && obtp && dbt) { //The character begins on a bridge, it is passable, and there is a connecting destination bridge, so the character proceeds to the destination bridge.
+			this._tileZ2 = a2;
+			return true;
+		}
+		if(obt && obtp && !dbt) { //The character begins on a bridge, it is passable, and there is no connecting destination bridge, so the character proceeds to the ground.
+			this._tileZ2 = 0;
+			return true;
+		}
+		if(!obt && dbt && !obp) { //The character begins on the ground, and there is a destination bridge (that is not connected to a bridge at the origin), so the character proceeds to the destination bridge.
+			this._tileZ2 = a2;
+			return true;
+		}
+		if(!obt && !dbt && !obp && ogp && dgp) { //The character begins on the ground, and there may be a bridge above somewhere, but it doesn't connect to the ground or other bridges, so character proceeds along the ground.
+			this._tileZ2 = 0;
+			return true;
+		}
+		if(!obt && dbt && obp && ogp && dgp) { //The character begins on the ground, and there are bridges above that are connected to each other, so the character proceeds along the ground.
+			this._tileZ2 = 0;
+			return true;
+		}
+		this._tileZ2 = null;
+		return false;
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_setMovementSuccess = Game_CharacterBase.prototype.setMovementSuccess;
+	Game_CharacterBase.prototype.setMovementSuccess = function(success) {
+		Tyruswoo.TileControl.Game_CharacterBase_setMovementSuccess.call(this, success);
+		if(this.isMovementSucceeded()) {
+			this.updateTileZ();
+			if(this.tileZ() >= this.realTileZ()) {
+				this.updateRealTileZ();
+			}
+		}
+	};
+	
+	// Alias method
+	/*
+	Tyruswoo.TileControl.Game_CharacterBase_update = Game_CharacterBase.prototype.update;
+	Game_CharacterBase.prototype.update = function() {
+		Tyruswoo.TileControl.Game_CharacterBase_update.call(this); //Default method
+		this.updateTileZ();
+	};
+	*/
+	
+	// New method
+	Game_CharacterBase.prototype.updateTileZ = function() {
+		if(this.tileZ2() !== null) {
+			// if(this === $gamePlayer && this._tileZ != this._tileZ2) console.log("New Altitude: " + this._tileZ2);
+			this._tileZ = this.tileZ2();
+			this._tileZ2 = null;
+		}
+	};
+	
+	// New method
+	Game_CharacterBase.prototype.updateRealTileZ = function() {
+		this._realTileZ = this.tileZ();
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_screenZ = Game_CharacterBase.prototype.screenZ;
+	Game_CharacterBase.prototype.screenZ = function() {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_CharacterBase_screenZ.call(this); //Bridges not enabled. Default method.
+		// if(this === $gamePlayer) console.log("screenZ:", this._priorityType * 2 + 1 + this._tileZ * 10, "_tileZ:", this._tileZ);
+		return this._priorityType * 2 + 1 + (this.realTileZ() ? this.realTileZ() : 0) * 10;
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_canPass = Game_CharacterBase.prototype.canPass;
+	Game_CharacterBase.prototype.canPass = function(x, y, d) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_CharacterBase_canPass.call(this, x, y, d); //Bridges not enabled. Default method.
+		const x2 = $gameMap.roundXWithDirection(x, d);
+		const y2 = $gameMap.roundYWithDirection(y, d);
+		if (!$gameMap.isValid(x2, y2)) {
+			this._tileZ2 = null;
+			return false;
+		}
+		if (this.isThrough() || this.isDebugThrough()) {
+			this.isMapPassable(x, y, d); //This function ensures the this._tileZ2 value is correctly determined.
+			return true;
+		}
+		if (!this.isMapPassable(x, y, d)) {
+			this._tileZ2 = null;
+			return false;
+		}
+		if (this.isCollidedWithCharacters(x2, y2)) {
+			this._tileZ2 = null;
+			return false;
+		}
+		return true;
+	};
+	
+	// To do: Make Game_CharacterBase.prototype.canPassDiagonally compatible with bridges of Tyruswoo_TileControl plugin.
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_updateMove = Game_CharacterBase.prototype.updateMove;
+	Game_CharacterBase.prototype.updateMove = function() {
+		Tyruswoo.TileControl.Game_CharacterBase_updateMove.call(this);
+		if (!this.isMoving()) { //After finishing a step to a new tile, then update the character's _realTileZ, if not yet updated.
+			this.updateRealTileZ();
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_CharacterBase_isCollidedWithEvents = Game_CharacterBase.prototype.isCollidedWithEvents;
+	Game_CharacterBase.prototype.isCollidedWithEvents = function(x, y) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_CharacterBase_isCollidedWithEvents.call(this, x, y); //Bridges not enabled. Default method.
+		const events = $gameMap.eventsXyNt(x, y);
+		return events.some(event => event.isNormalPriority() && event.tileZ() == this.tileZ2());
+	};
+	
+	//=============================================================================
+	// Game_Event
+	//=============================================================================
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Event_isCollidedWithEvents = Game_Event.prototype.isCollidedWithEvents;
+	Game_Event.prototype.isCollidedWithEvents = function(x, y) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_Event_isCollidedWithEvents.call(this, x, y); //Bridges not enabled. Default method.
+		const events = $gameMap.eventsXyNt(x, y).filter(event => event.tileZ() == this.tileZ2());
+		return events.length > 0;
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Event_isCollidedWithPlayerCharacters = Game_Event.prototype.isCollidedWithPlayerCharacters;
+	Game_Event.prototype.isCollidedWithPlayerCharacters = function(x, y) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_Event_isCollidedWithPlayerCharacters.call(this, x, y); //Bridges not enabled. Default method.
+		return this.isNormalPriority() && $gamePlayer.isCollided(x, y, this.tileZ2());
 	};
 
 	//=============================================================================
@@ -1224,9 +1740,106 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		}
 		return false;
 	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Player_isCollided = Game_Player.prototype.isCollided;
+	Game_Player.prototype.isCollided = function(x, y, tileZ2 = 0) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_Player_isCollided.call(this, x, y); //Bridges not enabled. Default method.
+		if (this.isThrough()) {
+			return false;
+		} else {
+			return (this.pos(x, y) && this.tileZ() == tileZ2) || this._followers.isSomeoneCollided(x, y, tileZ2);
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Player_startMapEvent = Game_Player.prototype.startMapEvent;
+	Game_Player.prototype.startMapEvent = function(x, y, triggers, normal, tileZ = 0) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Game_Player_startMapEvent.call(this, x, y, triggers, normal); //Default method.
+		} else { //Bridges enabled.
+			if (!$gameMap.isEventRunning()) {
+				for (const event of $gameMap.eventsXy(x, y)) {
+					if (
+						event.isTriggerIn(triggers) &&
+						event.isNormalPriority() === normal &&
+						event.tileZ() === tileZ //Check if event's tileZ layer is the same as the required tileZ layer.
+					) {
+						event.start();
+					}
+				}
+			}
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Player_checkEventTriggerHere = Game_Player.prototype.checkEventTriggerHere;
+	Game_Player.prototype.checkEventTriggerHere = function(triggers) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Game_Player_checkEventTriggerHere.call(this, triggers); //Default method.
+		} else { //Bridges enabled.
+			if (this.canStartLocalEvents()) {
+				this.startMapEvent(this.x, this.y, triggers, false, this.tileZ()); //To be triggered, event's tileZ must match the value provided.
+			}
+		}
+	};
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Player_checkEventTriggerThere = Game_Player.prototype.checkEventTriggerThere;
+	Game_Player.prototype.checkEventTriggerThere = function(triggers) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) { //Bridges not enabled.
+			Tyruswoo.TileControl.Game_Player_checkEventTriggerThere.call(this, triggers); //Default method.
+		} else { //Bridges enabled.
+			if (this.canStartLocalEvents()) {
+				const direction = this.direction();
+				const x1 = this.x;
+				const y1 = this.y;
+				const x2 = $gameMap.roundXWithDirection(x1, direction);
+				const y2 = $gameMap.roundYWithDirection(y1, direction);
+				const pass = this.isMapPassable(x1, y1, direction); //This function also calculates this._tileZ2
+				const tileZcheck = this.tileZ2();
+				this._tileZ2 = null; //Reset this._tileZ2
+				this.startMapEvent(x2, y2, triggers, true, (pass ? tileZcheck : this.tileZ())); //To be triggered, event's tileZ must match the value provided.
+				if (!$gameMap.isAnyEventStarting() && $gameMap.isCounter(x2, y2)) {
+					const x3 = $gameMap.roundXWithDirection(x2, direction);
+					const y3 = $gameMap.roundYWithDirection(y2, direction);
+					this.startMapEvent(x3, y3, triggers, true);
+				}
+			}
+		}
+	};
+	
+	// Replacement method.
+	// Integration with Tyruswoo_TileControl plugin: Touch only allowed when there is passability between the tiles, or when there isn't passability but the event is at the same tileZ as the player.
+	// Integration with Tyruswoo_EventAI plugin: Like original, except that touch triggers that can be initiated by player now include Player Touch, Event Touch, and Party Touch.
+	Game_Player.prototype.checkEventTriggerTouch = function(x, y) {
+		if(!Imported.Tyruswoo_TileControl || !Tyruswoo.TileControl.param.bridgeTerrainTag) { //If Tyruswoo_TileControl not imported, or if imported but does not have bridges not enabled.
+			if (this.canStartLocalEvents()) {
+				this.startMapEvent(x, y, (Imported.Tyruswoo_EventAI ? Tyruswoo.EventAI.TouchTriggers : [1, 2]), true); //If Tyruswoo_EventAI not important, then use default triggers.
+			}
+		} else { //Tyruswoo_TileControl imported, and has bridges enabled.
+			const pass = this.isMapPassable(this.x, this.y, this.direction()); //This function also calculates this._tileZ2
+			const tileZcheck = this.tileZ2();
+			this._tileZ2 = null; //Reset this._tileZ2
+			if (this.canStartLocalEvents()) {
+				this.startMapEvent(x, y, (Imported.Tyruswoo_EventAI ? Tyruswoo.EventAI.TouchTriggers : [1, 2]), true, (pass ? tileZcheck : this.tileZ())); //To be triggered, event's tileZ must match the value provided. Integrated with Tyruswoo_EventAI.
+			}
+		}
+	};
+	
+	//=============================================================================
+	// Game_Followers
+	//=============================================================================
+	
+	// Alias method
+	Tyruswoo.TileControl.Game_Followers_isSomeoneCollided = Game_Followers.prototype.isSomeoneCollided;
+	Game_Followers.prototype.isSomeoneCollided = function(x, y, tileZ2 = 0) {
+		if(!Tyruswoo.TileControl.param.bridgeTerrainTag) return Tyruswoo.TileControl.Game_Followers_isSomeoneCollided.call(this, x, y); //Bridges not enabled. Default method.
+		return this.visibleFollowers().some(follower => follower.pos(x, y) && follower.tileZ() == tileZ2);
+	};
 
 	//=============================================================================
-	// Game_Map expansion
+	// Game_Map
 	//=============================================================================
 
 	// Alias method
@@ -1464,8 +2077,16 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	};
 
 	// New method
+	// CAUTION: This log only works reliably for local tile changes.
 	Game_Map.prototype.logTileInfo = function(x, y) {
-		// CAUTION: This log only works reliably for local tile changes.
+		let color      = "\x1b[30m"; //Default text color (black) //Uses StdOut from Node JS. See https://gist.github.com/abritinthebay/d80eb99b2726c83feb0d97eab95206c4
+		let highlight  = "\x1b[34m"; //Highlight text color (blue)
+		let highlight2 = "\x1b[32m"; //Highlight2 text color (green)
+		if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) { //Dark mode
+			color      = "\x1b[37m"; //Dark mode default text color (white)
+			highlight  = "\x1b[36m"; //Dark mode highlight text color (cyan)
+			highlight2 = "\x1b[33m"; //Dark mode highlight2 text color (yellow)
+		}
 		var output = "Tile Info at (" + x + "," + y + "):\n";
 		const flags = this.tilesetFlags();
 		for (z = 0; z <= 3; z++) {
@@ -1474,29 +2095,29 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 			var tileCode = this.tileCodeAt(x, y, z);
 			var flag = flags[tileId];
 			var flag_text = flag + " (0b" + flag.toString(2) + ") (0x" + flag.toString(16) + ")";
-			var text1 = "\x1b[30mTile \x1b[34m";
-			var text2 = x + " " + y + " " + z;
-			var text3 = "\x1b[30m tileId \x1b[34m" + tileId + "\x1b[30m Autotile Type \x1b[34m" + a;
-			var text4 = "\x1b[30m Flag \x1b[34m" + flag_text;
-			var text5 = "\x1b[30m Code \x1b[32m" + tileCode + "\n";
+			var text1 = color + "Tile ";
+			var text2 = highlight + x + " " + y + " " + z;
+			var text3 = color + " tileId " + highlight + tileId + color + " Autotile Type " + highlight + a;
+			var text4 = color + " Flag " + highlight + flag_text;
+			var text5 = color + " Code " + highlight2 + tileCode + "\n";
 			output += text1 + text2 + text3 + text4 + text5;
 		}
-		output += "\x1b[30mSpecial properties from flags:";
+		output += color + "Special properties from flags:";
 		var text6 = "";
-		if (this.isLadder(x, y)) {text6 += "\x1b[34m Ladder";}
-		if (this.isBush(x, y)) {text6 += "\x1b[34m Bush";}
-		if (this.isCounter(x, y)) {text6 += "\x1b[34m Counter";}
-		if (this.isDamageFloor(x, y)) {text6 += "\x1b[34m DamageFloor";}
-		if (this.isBoatPassable(x, y)) {text6 += "\x1b[34m BoatPassable";}
-		if (this.isShipPassable(x, y)) {text6 += "\x1b[34m ShipPassable";}
-		if (this.isAirshipLandOk(x, y)) {text6 += "\x1b[34m AirshipLandOk";}
-		if (!text6.length) {output += "\x1b[30m None.";}
+		if (this.isLadder(x, y)) {text6 += highlight + " Ladder";}
+		if (this.isBush(x, y)) {text6 += highlight + " Bush";}
+		if (this.isCounter(x, y)) {text6 += highlight + " Counter";}
+		if (this.isDamageFloor(x, y)) {text6 += highlight + " DamageFloor";}
+		if (this.isBoatPassable(x, y)) {text6 += highlight + " BoatPassable";}
+		if (this.isShipPassable(x, y)) {text6 += highlight + " ShipPassable";}
+		if (this.isAirshipLandOk(x, y)) {text6 += highlight + " AirshipLandOk";}
+		if (!text6.length) {output += color + " None.";}
 		output += text6 + "\n";
 		var s = this.shadowBits(x, y);
 		s = s + " (0b" + s.toString(2) + ")";
 		const r = this.linkedRegionId(x, y);
 		const t = this.terrainTag(x, y);
-		output += "\x1b[30mShadow Bits: \x1b[34m" + s + "\n" + "\x1b[30mTile Region: \x1b[34m" + r + "\n" + "\x1b[30mTerrain Tag: \x1b[34m" + t;
+		output += color + "Shadow Bits: " + highlight + s + color + "\nTile Region: " + highlight + r + color + "\nTerrain Tag: " + highlight + t;
 		console.log(output);
 	};
 
@@ -2106,6 +2727,109 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 		const a2 = this.autotileTypeById(tileId_2);
 		if (((a1 == a2) && (a1 != -1)) || tileId_1 == tileId_2) {
 			return true;
+		}
+		return false;
+	};
+	
+	// New method
+	// Check if any bridge is present at this location.
+	// Similar to the Game_Map.terrainTag method, but instead of returning tag of highest tile with non-zero tag, we return true if any bridge tag in any tile.
+	Game_Map.prototype.bridgeAt = function(x, y) {
+		if (this.isValid(x, y)) {
+			const flags = this.tilesetFlags();
+			const tiles = this.layeredTiles(x, y);
+			for (const tile of tiles) {
+				const tag = flags[tile] >> 12;
+				if(tag === Tyruswoo.TileControl.param.bridgeTerrainTag) return true;
+			}
+		}
+		return false;
+	};
+	
+	// New method
+	// Check if a given tileId is a bridge.
+	Game_Map.prototype.isBridgeTile = function(tileId) {
+		const flags = this.tilesetFlags();
+		const tag = flags[tileId] >> 12;
+		if (tag === Tyruswoo.TileControl.param.bridgeTerrainTag) {
+			return true;
+		}
+		return false;
+	};
+	
+	// New method
+	// From a list of tileIds, returns only the tileIds that are not bridges.
+	Game_Map.prototype.nonBridgeTiles = function(tiles) {
+		let nonBridgeTiles = [];
+		for(let i = 0; i < tiles.length; i++) {
+			if(!this.isBridgeTile(tiles[i])) {
+				nonBridgeTiles.push(tiles[i])
+			}
+		}
+		return nonBridgeTiles;
+	};
+	
+	// New method
+	// Similar to Game_Map.isPassable, but only checking a single tileId, assuming a bridge.
+	Game_Map.prototype.isPassableBridge = function(tileId, d) {
+		return this.checkPassageOfBridge(tileId, (1 << (d / 2 - 1)) & 0x0f);
+	};
+	
+	// New method
+	// Similar to Game_Map.checkPassage, but only checking a single tileId, assuming a bridge.
+	Game_Map.prototype.checkPassageOfBridge = function(tileId, bit) {
+		if(!this.isBridgeTile(tileId)) return false; //Only bridges qualify.
+		const flags = this.tilesetFlags();
+		const flag = flags[tileId];
+		if ((flag & 0x10) !== 0) {
+			// [*] This is a "star" tile that appears over players. This is not a passable bridge tile.
+			return false;
+		}
+		if ((flag & bit) === 0) {
+			// [o] Passable
+			return true;
+		}
+		if ((flag & bit) === bit) {
+			// [x] Impassable
+			return false;
+		}
+		return false;
+	};
+	
+	// New method
+	// Return the index of the first passable bridge tile found in the list of tiles 
+	Game_Map.prototype.firstPassableBridgeTileIndex = function(tiles, d) {
+		if(!tiles || !tiles.length) return null;
+		for(let i = 0; i < tiles.length; i++) {
+			if(this.isPassableBridge(tiles[i], d)) return i;
+		}
+		return null;
+	};
+	
+	// New method
+	// Similar to Game_Map.isPassable, but only checking certain tiles.
+	Game_Map.prototype.isPassableTiles = function(tiles, d) {
+		return this.checkPassageOfTiles(tiles, (1 << (d / 2 - 1)) & 0x0f);
+	};
+	
+	// New method
+	// Similar to Game_Map.checkPassage, but instead of checking all tiles at a location, we check only the provided tiles.
+	Game_Map.prototype.checkPassageOfTiles = function(tiles, bit) {
+		const flags = this.tilesetFlags();
+		for (const tile of tiles) {
+			const flag = flags[tile];
+			if ((flag & 0x10) !== 0) {
+				// [*] No effect on passage
+				continue;
+			}
+			if ((flag & bit) === 0) {
+				// [o] Passable
+				return true;
+			}
+			if ((flag & bit) === bit) {
+				// [x] Impassable
+				return false;
+			}
 		}
 		return false;
 	};
