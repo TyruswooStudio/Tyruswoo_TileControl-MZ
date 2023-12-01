@@ -36,7 +36,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 
 /*:
  * @target MZ
- * @plugindesc MZ v3.0.1 Change tiles dynamically during gameplay!
+ * @plugindesc MZ v3.0.2 Change tiles dynamically during gameplay!
  * @author Tyruswoo and McKathlin
  * @url https://www.tyruswoo.com
  *
@@ -397,6 +397,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * 
  * v3.0.1  8/30/2023
  *        - This plugin is now free and open source under the MIT license.
+ * 
+ * v3.0.2  ?/??/2023
+ *        - Now less likely to conflict with other plugins that alter what
+ *          the player's Action Button does.
  *
  * ============================================================================
  * MIT License
@@ -1199,31 +1203,18 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
 	// Game_Player
 	//=============================================================================
 	
-	// Replacement method
-	Game_Player.prototype.triggerButtonAction = function() {
-		if (Input.isTriggered("ok")) {
-			if (Tyruswoo.TileControl.param.tileInfoOnOkPress && Input.isPressed("control")) {
+	if (Tyruswoo.TileControl.param.tileInfoOnOkPress) {
+		// Alias method
+		Tyruswoo.TileControl.Game_Player_triggerActionButton =
+			Game_Player.prototype.triggerButtonAction;
+		Game_Player.prototype.triggerButtonAction = function() {
+			// Tile Info on OK Press is added before handling the usual.
+			if (Input.isTriggered("ok") && Input.isPressed("control")) {
 				$gameMap.logTileInfo($gamePlayer.x, $gamePlayer.y);
 			}
-			if (this.getOnOffVehicle()) {
-				return true;
-			}
-			this.checkEventTriggerHere([0]);
-			if ($gameMap.setupStartingEvent()) {
-				return true;
-			}
-			this.checkEventTriggerThere([0, 1, 2]);
-			if ($gameMap.setupStartingEvent()) {
-				return true;
-			}
-			if (Tyruswoo.TileControl.param.commonEventOnOkPress > 0) {
-				$gameTemp.reserveCommonEvent(
-					Tyruswoo.TileControl.param.commonEventOnOkPress);
-				return true;
-			}
-		}
-		return false;
-	};
+			return Tyruswoo.TileControl.Game_Player_triggerActionButton.call(this);
+		};
+	} // endif Tile Info On OK Press
 
 	//=============================================================================
 	// Game_Map expansion
