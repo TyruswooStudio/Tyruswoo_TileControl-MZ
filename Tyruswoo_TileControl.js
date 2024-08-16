@@ -361,7 +361,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *       Bit 14: Terrain Tags 1 to 7 (in binary).
  *       Bit 15: Terrain Tags 1 to 7 (in binary).
  * ============================================================================
- * For more help using the Tile Control plugin, see Tyruswoo.com.
+ * Visit Tyruswoo.com to ask for help, donate, or browse more of our plugins.
  * ============================================================================
  * Version History:
  *
