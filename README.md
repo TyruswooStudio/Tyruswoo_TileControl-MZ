@@ -345,7 +345,7 @@ of 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, or f).
 | Bit 14 | Terrain Tags 1 to 7 (in binary).                            |
 | Bit 15 | Terrain Tags 1 to 7 (in binary).                            |
 
-### For more help using the Tile Control plugin, see [Tyruswoo.com](https://www.tyruswoo.com).
+### Visit [**Tyruswoo.com**](https://www.tyruswoo.com) to [ask for help](https://www.tyruswoo.com/contact-us/), [donate](https://www.tyruswoo.com/donate/), or browse more of our [plugins](https://www.tyruswoo.com/downloads/rpg-maker-plugin-downloads/).
 
 ## Version History
 
