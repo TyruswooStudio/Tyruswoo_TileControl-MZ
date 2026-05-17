@@ -122,7 +122,7 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  *                              console window.) Default: True.
  * ============================================================================
  * Script calls (Advanced):
- *
+ * 
  * $gameMap.tileCodeAt(x,y,z)
  *     Returns the "Tx,y" ("Letter X comma Y" or "Tab X comma Y") tile code
  *     at location (x,y,z) where x is the x coordinate,y is the y coordinate,
@@ -140,6 +140,21 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * $gameMap.tileCode(x,y,z)
  *     Same as $gameMap.tileCodeAt(x,y,z).
  *
+ * $gameMap.setTileId(x, y, z, tileId)
+ *     Places a tile at the location given. The parameters are as follows:
+ *     - x: Number of tiles east of the map's farthest west column
+ *     - y: Number of tiles south of the map's farthest north row
+ *     - z: A layer 0 through 3, where 0 is the bottom layer and 3 is the top.
+ *     - tileId: An integer ID or text code representing the tile to place.
+ *       See Tile Control's help text for more on tile codes.
+ *     - clearUpperLayers: (optional, true by default) A Boolean value
+ *       indicating whether to empty the layers above the chosen layer at these
+ *       coordinates.
+ *     - allowAutotiling: (optional, true by default) A Boolean value telling
+ *       whether to apply autotiling to this tile and its neighbors when the
+ *       tile is placed. Set it to false to place an exact tile without
+ *       autotiling.
+ * 
  * $gameMap.tileMatch(tileIdList, x, y, z)
  * $gameMap.tileIdInList(tileIdList, x, y, z)
  * $gameMap.autotileInList(autotileList, x, y, z)
@@ -398,9 +413,10 @@ Tyruswoo.TileControl = Tyruswoo.TileControl || {};
  * v3.0.1  8/30/2023
  *        - This plugin is now free and open source under the MIT license.
  * 
- * v3.0.2  ?/??/2023
+ * v3.0.2  5/16/2026
  *        - Now less likely to conflict with other plugins that alter what
  *          the player's Action Button does.
+ *        - Help text updated to describe $gameMap.setTileId(x, y, z)
  *
  * ============================================================================
  * MIT License
